@@ -1,0 +1,13 @@
+numpy
+requests
+tqdm
+scipy
+scikit-learn
+seqeval
+tensorboardx
+pandas
+wandb
+streamlit
+matplotlib
+seaborn
+setproctitle
