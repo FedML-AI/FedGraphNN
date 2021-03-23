@@ -27,12 +27,12 @@ pip install -r FedML/requirements.txt
 
 ### Centralized Molecule Property Classification experiments
 ```
-python experiments/centralized/sage_moleculenet/molecule_classification_multilabel.py
+python experiments/centralized/moleculenet/molecule_classification_multilabel.py
 ```
 
 ### Centralized Molecule Property Regression experiments
 ```
-python experiments/centralized/sage_moleculenet/molecule_regression_multivariate.py
+python experiments/centralized/moleculenet/molecule_regression_multivariate.py
 ```
 
 #### Arguments for Centralized Training
