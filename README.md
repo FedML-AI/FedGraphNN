@@ -101,7 +101,7 @@ At that time, we can install FedML package with pip or conda, without the need t
 - `FedML`: A soft repository link generated using `git submodule add https://github.com/FedML-AI/FedML`.
 
 - `data`: Provide data downloading scripts and store the downloaded datasets.
-Note that in `FedML/data`, there also exists datasets for research, but these datasets are used for evaluating federated optimizers (e.g., FedAvg) and platforms. FedGraphNN supports more advanced datasets and models for federated training of graph neural networks.
+Note that in `FedML/data`, there also exists datasets for research, but these datasets are used for evaluating federated optimizers (e.g., FedAvg) and platforms. FedGraphNN supports more advanced datasets and models for federated training of graph neural networks. Currently, we have molecular machine learning datasets. 
 
 - `data_preprocessing`: Domain-specific PyTorch Data loaders for centralized and distributed training. 
 
