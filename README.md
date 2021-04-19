@@ -135,5 +135,15 @@ git push
 ## Citation
 Please cite our FedML paper if it helps your research.
 You can describe us in your paper like this: "We develop our experiments based on FedML".
+```
+@misc{he2021fedgraphnn,
+      title={FedGraphNN: A Federated Learning System and Benchmark for Graph Neural Networks}, 
+      author={Chaoyang He and Keshav Balasubramanian and Emir Ceyani and Yu Rong and Peilin Zhao and Junzhou Huang and Murali Annavaram and Salman Avestimehr},
+      year={2021},
+      eprint={2104.07145},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+```
 
  
