@@ -11,7 +11,7 @@ After `git clone`-ing this repository, please run the following command to insta
 ```bash
 conda create -n fedgraphnn python=3.7
 conda activate fedgraphnn
-conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch -n fedmolecule
+conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch -n fedgraphnn
 conda install -c anaconda mpi4py grpcio
 conda install scikit-learn numpy h5py setproctitle networkx
 pip install -r requirements.txt 
