@@ -10,13 +10,11 @@ import wandb
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
-from data_preprocessing.molecule.data_loader import *
-from model.sage_readout import SageMoleculeNet
-from model.gat_readout import GatMoleculeNet
-from model.gcn_readout import GcnMoleculeNet
-from training.sage_readout_trainer import SageMoleculeNetTrainer
-from training.gat_readout_trainer import GatMoleculeNetTrainer
-from training.gcn_readout_trainer import GcnMoleculeNetTrainer
+from data_preprocessing.social_networks.data_loader import *
+from model.social_networks.gin import GIN
+
+from training.social_networks.gin_trainer import GINSocialNetworkTrainer
+
 from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init, FedML_FedAvg_distributed
 
 
@@ -106,14 +104,13 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    if (args.dataset != 'sider') and (args.dataset != 'clintox') and (args.dataset != 'bbbp') and \
-            (args.dataset != 'bace') and (args.dataset != 'pcba') and (args.dataset != 'tox21'):
+    if args.dataset not in ["COLLAB", "IMDB-BINARY", "IMDB-MULTI"]:
         raise Exception("no such dataset!")
 
     compact = (args.model == 'graphsage')
 
     logging.info("load_data. dataset_name = %s" % dataset_name)
-    _, feature_matrices, labels = get_data(args.data_dir)
+    graphs, feat_dim, num_cats  = get_data(args.data_dir, args.dataset)
     unif = True if args.partition_method == "homo" else False
     if args.model == 'gcn':
         args.normalize_features = True
@@ -134,23 +131,16 @@ def load_data(args, dataset_name):
     dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
                data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict]
 
-    return dataset, feature_matrices[0].shape[1], labels[0].shape[0]
+
+    return dataset, feat_dim, num_cats
 
 
 def create_model(args, model_name, feat_dim, num_cats, output_dim):
     logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, output_dim))
-    if model_name == "graphsage":
-        model = SageMoleculeNet(feat_dim, args.hidden_size, args.node_embedding_dim, args.dropout,
-                                args.readout_hidden_dim, args.graph_embedding_dim, num_cats)
-        trainer = SageMoleculeNetTrainer(model)
-    elif model_name == 'gat':
-        model = GatMoleculeNet(feat_dim, args.hidden_size, args.node_embedding_dim, args.dropout,
-                               args.alpha, args.num_heads, args.readout_hidden_dim, args.graph_embedding_dim, num_cats)
-        trainer = GatMoleculeNetTrainer(model)
-    elif model_name == 'gcn':
-        model = GcnMoleculeNet(feat_dim, args.hidden_size, args.node_embedding_dim, args.dropout,
+    if model_name == 'gin':
+        model = GIN(feat_dim, args.hidden_size, args.node_embedding_dim, args.dropout,
                                args.readout_hidden_dim, args.graph_embedding_dim, num_cats, sparse_adj=args.sparse_adjacency)
-        trainer = GcnMoleculeNetTrainer(model)
+        trainer = GINSocialNetworkTrainer(model)
     else:
         raise Exception("such model does not exist !")
     logging.info("done")
@@ -194,7 +184,7 @@ if __name__ == "__main__":
     args = add_args(parser)
 
     # customize the process name
-    str_process_name = "FedMolecule:" + str(process_id)
+    str_process_name = "FedGraphNN:" + str(process_id)
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
@@ -216,7 +206,7 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
-            name="FedMolecule(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
+            name="FedGraphNN(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
             config=args
         )
 
@@ -246,7 +236,9 @@ if __name__ == "__main__":
     dataset, feat_dim, num_cats = load_data(args, args.dataset)
     [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
      data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict] = dataset
-
+    print(feat_dim)
+    print(num_cats)
+    print("Dataset DONE!")
     # create model.
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
     # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
