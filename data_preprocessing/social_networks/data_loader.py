@@ -17,7 +17,7 @@ from .datasets import MoleculesDataset
 from .utils import *
 
 
-def get_data(path, data, convert_x = False):
+def get_data(path, data, convert_x = True):
 
     tudataset = TUDataset(f"{path}/TUDataset", data)
 

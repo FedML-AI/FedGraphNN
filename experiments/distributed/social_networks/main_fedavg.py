@@ -100,6 +100,7 @@ def add_args(parser):
     parser.add_argument('--ci', type=int, default=0,
                         help='CI')
     args = parser.parse_args()
+    args.backend = 'MPI'
     return args
 
 
@@ -138,8 +139,7 @@ def load_data(args, dataset_name):
 def create_model(args, model_name, feat_dim, num_cats, output_dim):
     logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, output_dim))
     if model_name == 'gin':
-        model = GIN(feat_dim, args.hidden_size, args.node_embedding_dim, args.dropout,
-                               args.readout_hidden_dim, args.graph_embedding_dim, num_cats, sparse_adj=args.sparse_adjacency)
+        model = GIN(nfeat = feat_dim, nhid = args.hidden_size, nclass = num_cats, nlayer =2, dropout = args.dropout, eps=0.1)
         trainer = GINSocialNetworkTrainer(model)
     else:
         raise Exception("such model does not exist !")
