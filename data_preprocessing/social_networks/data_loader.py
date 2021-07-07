@@ -28,7 +28,7 @@ def get_data(path, data, convert_x = True):
         graphs = [x for x in tudataset]
     
 
-    return graphs, tudataset.num_node_features, tudataset.num_classes
+    return graphs, graphs[0].x.shape[1], tudataset.num_classes
 
 
 def create_random_split(path,data):
