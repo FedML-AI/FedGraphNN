@@ -2,6 +2,7 @@ import numpy as np
 import scipy.sparse as sp
 import torch
 from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 from torch_geometric.utils import to_networkx, degree
 import torch.nn.functional as F
@@ -29,7 +30,10 @@ def convert_to_nodeDegreeFeatures(graphs):
 
     return new_graphs
 
-
+def split_data(graphs, train=None, test=None, shuffle=True, seed=None):
+    y = torch.cat([graph.y for graph in graphs])
+    graphs_tv, graphs_test = train_test_split(graphs, train_size=train, test_size=test, stratify=y, shuffle=shuffle, random_state=seed)
+    return graphs_tv, graphs_test
 
 
 def np_uniform_sample_next(compact_adj, tree, fanout):
