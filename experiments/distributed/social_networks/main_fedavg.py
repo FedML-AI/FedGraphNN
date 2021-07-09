@@ -57,12 +57,16 @@ def add_args(parser):
     # model related
     parser.add_argument('--hidden_size', type=int, default=32, help='Size of GraphSAGE hidden layer')
 
+    parser.add_argument('--n_layers', type=int, default=5, help='Number of GraphSAGE hidden layers')
+
     parser.add_argument('--node_embedding_dim', type=int, default=32,
                         help='Dimensionality of the vector space the atoms will be embedded in')
 
     parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for LeakyRelu used in GAT')
 
     parser.add_argument('--num_heads', type=int, default=2, help='Number of attention heads used in GAT')
+
+    parser.add_argument('--eps', type=int, default=0, help='Epsilon parameter used in GIN')
 
     parser.add_argument('--dropout', type=float, default=0.3, help='Dropout used between GraphSAGE layers')
 
@@ -97,15 +101,17 @@ def add_args(parser):
     parser.add_argument('--gpu_num_per_server', type=int, default=4,
                         help='gpu_num_per_server')
 
+    parser.add_argument('--backend', type=str, default="MPI",
+                        help='Distributed backend to run')
+
     parser.add_argument('--ci', type=int, default=0,
                         help='CI')
     args = parser.parse_args()
-    args.backend = 'MPI'
     return args
 
 
 def load_data(args, dataset_name):
-    if args.dataset not in ["COLLAB", "IMDB-BINARY", "IMDB-MULTI"]:
+    if args.dataset not in ["COLLAB", "REDDIT-BINARY", "REDDIT-MULTI-5K", "REDDIT-MULTI-12K", "IMDB-BINARY", "IMDB-MULTI" ]:
         raise Exception("no such dataset!")
 
     compact = (args.model == 'graphsage')
@@ -116,11 +122,6 @@ def load_data(args, dataset_name):
     if args.model == 'gcn':
         args.normalize_features = True
         args.normalize_adjacency = True
-
-    if args.dataset == 'pcba':
-        args.metric = 'prc-auc'
-    else:
-        args.metric = "roc-auc"
 
     train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
@@ -139,7 +140,7 @@ def load_data(args, dataset_name):
 def create_model(args, model_name, feat_dim, num_cats, output_dim):
     logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, output_dim))
     if model_name == 'gin':
-        model = GIN(nfeat = feat_dim, nhid = args.hidden_size, nclass = num_cats, nlayer =2, dropout = args.dropout, eps=0.1)
+        model = GIN(nfeat = feat_dim, nhid = args.hidden_size, nclass = num_cats, nlayer = args.n_layers, dropout = args.dropout, eps=args.eps)
         trainer = GINSocialNetworkTrainer(model)
     else:
         raise Exception("such model does not exist !")

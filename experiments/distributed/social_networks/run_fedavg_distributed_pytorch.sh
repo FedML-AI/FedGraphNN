@@ -12,13 +12,12 @@ EPOCH=$9
 BATCH_SIZE=$10
 LR=${11}
 HIDDEN_DIM=${12}
-NODE_DIM=${13}
+N_LAYERS=${13}
 DR=${14}
-READ_DIM=${15}
-GRAPH_DIM=${16}
-DATASET=${17}
-DATA_DIR=${18}
-CI=${19}
+DATASET=${15}
+DATA_DIR=${16}
+DIST_BACKEND=${17}
+CI=${18}
 
 PROCESS_NUM=`expr $WORKER_NUM + 1`
 echo $PROCESS_NUM
@@ -32,10 +31,7 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 main_fedavg.py \
   --dataset $DATASET \
   --data_dir $DATA_DIR \
   --hidden_size $HIDDEN_DIM \
-  --node_embedding_dim $NODE_DIM \
   --dropout $DR \
-  --readout_hidden_dim $READ_DIM \
-  --graph_embedding_dim $GRAPH_DIM \
   --partition_method $DISTRIBUTION  \
   --partition_alpha $PARTITION_ALPHA \
   --client_num_in_total $CLIENT_NUM \
@@ -43,5 +39,7 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 main_fedavg.py \
   --comm_round $ROUND \
   --epochs $EPOCH \
   --batch_size $BATCH_SIZE \
+  --n_layers $N_LAYERS \
   --lr $LR \
+  --backend $DIST_BACKEND \
   --ci $CI

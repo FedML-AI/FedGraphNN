@@ -29,9 +29,9 @@ class GINSocialNetworkTrainer(ModelTrainer):
             pass
 
         if args.client_optimizer == "sgd":
-            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr)
+            optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay = args.wd)
         else:
-            optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr)
+            optimizer = torch.optim.Adam(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr,  weight_decay = args.wd)
 
         max_test_acc = 0
         best_model_params = {}

@@ -38,26 +38,6 @@ def create_random_split(path,data):
     
     graphs_train, graphs_val = split_data(graphs_tv, train=0.9, test=0.1, shuffle=True)
 
-
-    # train_range = (0, int(0.8 * len(adj_matrices)))
-    # val_range = (int(0.8 * len(adj_matrices)), int(0.8 * len(adj_matrices)) + int(0.1 * len(adj_matrices)))
-    # test_range = (int(0.8 * len(adj_matrices)) + int(0.1 * len(adj_matrices)), len(adj_matrices))
-
-    # all_idxs = list(range(len(adj_matrices)))
-    # random.shuffle(all_idxs)
-
-    # train_adj_matrices = [adj_matrices[all_idxs[i]] for i in range(train_range[0], train_range[1])]
-    # train_feature_matrices = [feature_matrices[all_idxs[i]] for i in range(train_range[0], train_range[1])]
-    # train_labels = [labels[all_idxs[i]] for i in range(train_range[0], train_range[1])]
-
-    # val_adj_matrices = [adj_matrices[all_idxs[i]] for i in range(val_range[0], val_range[1])]
-    # val_feature_matrices = [feature_matrices[all_idxs[i]] for i in range(val_range[0], val_range[1])]
-    # val_labels = [labels[all_idxs[i]] for i in range(val_range[0], val_range[1])]
-
-    # test_adj_matrices = [adj_matrices[all_idxs[i]] for i in range(test_range[0], test_range[1])]
-    # test_feature_matrices = [feature_matrices[all_idxs[i]] for i in range(test_range[0], test_range[1])]
-    # test_labels = [labels[all_idxs[i]] for i in range(test_range[0], test_range[1])]
-
     return graphs_train, graphs_val, graphs_test
 
 
@@ -124,31 +104,19 @@ def partition_data_by_sample_size(args, path, client_number, uniform=True, compa
         client_test_idxs = clients_idxs_test[client]
 
         train_graphs_client = [graphs_train[idx] for idx in client_train_idxs]
-        
-        
-        #train_feature_matrices_client = [train_feature_matrices[idx] for idx in client_train_idxs]
         train_labels_client = [graphs_train[idx].y for idx in client_train_idxs]
         labels_of_all_clients.append(train_labels_client)
 
         val_graphs_client = [graphs_val[idx] for idx in client_val_idxs]
-        # val_adj_matrices_client = [val_adj_matrices[idx] for idx in client_val_idxs]
-        # val_feature_matrices_client = [val_feature_matrices[idx] for idx in client_val_idxs]
+        
         val_labels_client = [graphs_val[idx].y for idx in client_val_idxs]
         labels_of_all_clients.append(val_labels_client)
 
         test_graphs_client = [graphs_test[idx] for idx in client_test_idxs]
-        # test_adj_matrices_client = [test_adj_matrices[idx] for idx in client_test_idxs]
-        # test_feature_matrices_client = [test_feature_matrices[idx] for idx in client_test_idxs]
+
         test_labels_client = [graphs_test[idx].y for idx in client_test_idxs]
         labels_of_all_clients.append(test_labels_client)
 
-
-        # train_dataset_client = MoleculesDataset(train_adj_matrices_client, train_feature_matrices_client,
-        #                                         train_labels_client, path, compact=compact, split='train')
-        # val_dataset_client = MoleculesDataset(val_adj_matrices_client, val_feature_matrices_client, val_labels_client, path,
-        #                                       compact=compact, split='val')
-        # test_dataset_client = MoleculesDataset(test_adj_matrices_client, test_feature_matrices_client,
-        #                                        test_labels_client, path, compact=compact, split='test')
 
         partition_dict = {'train': train_graphs_client,
                           'val': val_graphs_client,
@@ -243,11 +211,11 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
         else DefaultCollator(normalize_features=normalize_features, normalize_adj=normalize_adj)
 
     # This is a PyG Dataloader
-    train_data_global = DataLoader(global_data_dict['train'], batch_size=32, shuffle=True, collate_fn=collator,
+    train_data_global = DataLoader(global_data_dict['train'], batch_size=args.batch_size, shuffle=True, collate_fn=collator,
                                         pin_memory=True)
-    val_data_global = DataLoader(global_data_dict['val'], batch_size=32, shuffle=True, collate_fn=collator,
+    val_data_global = DataLoader(global_data_dict['val'], batch_size=args.batch_size, shuffle=True, collate_fn=collator,
                                       pin_memory=True)
-    test_data_global =  DataLoader(global_data_dict['test'], batch_size=32, shuffle=True, collate_fn=collator,
+    test_data_global =  DataLoader(global_data_dict['test'], batch_size=args.batch_size, shuffle=True, collate_fn=collator,
                                        pin_memory=True)
 
     train_data_num = len(global_data_dict['train'])
@@ -260,12 +228,12 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
         test_dataset_client = partition_dicts[client]['test']
 
         data_local_num_dict[client] = len(train_dataset_client)
-        train_data_local_dict[client] = DataLoader(train_dataset_client, batch_size=32, shuffle=True,
+        train_data_local_dict[client] = DataLoader(train_dataset_client, batch_size=args.batch_size, shuffle=True,
                                                         collate_fn=collator, pin_memory=True)
-        val_data_local_dict[client] = DataLoader(val_dataset_client, batch_size=32, shuffle=False,
+        val_data_local_dict[client] = DataLoader(val_dataset_client, batch_size=args.batch_size, shuffle=False,
                                                       collate_fn=collator, pin_memory=True)
         test_data_local_dict[client] = test_data_global if global_test else DataLoader(test_dataset_client,
-                                                                                            batch_size=32, shuffle=False,
+                                                                                            batch_size=args.batch_size, shuffle=False,
                                                                                             collate_fn=collator,
                                                                                             pin_memory=True)
 
