@@ -4,6 +4,8 @@ import networkx as nx
 import copy
 import logging
 import pickle
+import pandas as pd
+import community as community_louvain
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -13,7 +15,7 @@ from torch_geometric.datasets import CitationFull
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import k_hop_subgraph
 
-# from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
+from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 
 def _convert_to_nodeDegreeFeatures(graphs):
@@ -62,8 +64,19 @@ def _get_egonetworks(g, ego_number, hop_number):
     return egonetworks
 
 
-def _subgraphing(g):
-    pass
+def _subgraphing(g, partion):
+    nodelist = [None] * len(set(partion.values()))
+    for k, v in partion.items():
+        if nodelist[v] is None:
+            nodelist[v] = []
+        nodelist[v].append(k)
+
+    graphs = []
+    for nodes in nodelist:
+        if len(nodes) < 2:
+            continue
+        graphs.append(nx.subgraph(G, nodes))
+    return graphs
 
 
 def _mask_edges(graphs):
@@ -85,35 +98,83 @@ def get_data_ego(path, data, ego_number, hop_number, convert_x=False):
     return subgraphs
 
 
+def _read_mapping(path, data, filename):
+    mapping = dict()
+    df = pd.read_csv(os.path.join(path, data, filename), sep='\t', header=None, index_col=None)
+    for _, row in df.iterrows():
+        mapping[row[1]] = int(row[0])
+    # with open(os.path.join(path, data, filename)) as f:
+    #     for line in f:
+    #         s = line.strip().split()
+    #         mapping[s[1]] = int(s[0])
+    
+    return mapping
+
+
+def _build_nxGraphs(path, data, filename, mapping_entities, mapping_relations):
+    G = nx.Graph()
+    df = pd.read_csv(os.path.join(path, data, filename), sep='\t', header=None, index_col=None)
+    for _, row in df.iterrows():
+        G.add_edge(mapping_entities[row[0]], mapping_entities[row[2]], edge_label=mapping_relations[row[1]])
+    # with open(os.path.join(path, data, filename)) as f:
+    #     for line in f:
+    #         s = line.strip().split()
+    #         G.add_edge(mapping_entities[s[0]], mapping_entities[s[2]], edge_label=mapping_relations[s[1]])
+    return G
+
+
 def get_data_community(path, data, algo):
-    pass
+    mapping_entities = _read_mapping(path, data, 'entities.dict')
+    mapping_relations = _read_mapping(path, data, 'relations.dict')
+
+    g_train = _build_nxGraphs(path, data, 'train.txt', mapping_entities, mapping_relations)
+    g_test = _build_nxGraphs(path, data, 'test.txt', mapping_entities, mapping_relations)
+    g_val = _build_nxGraphs(path, data, 'valid.txt', mapping_entities, mapping_relations)
+
+    assert algo in ['Louvain', 'girvan_newman', 'Clauset-Newman-Moore', 'asyn_lpa_communities', 'label_propagation_communities']
+
+    if algo == 'Louvain':
+        partion = community_louvain.best_partition(g_train)
+        graphs_train = _subgraphing(g_train, partion)
+        partion = community_louvain.best_partition(g_val)
+        graphs_val = _subgraphing(g_val, partion)
+        partion = community_louvain.best_partition(g_test)
+        graphs_test = _subgraphing(g_test, partion)
+
+    # algorithms:
+    # Louvain
+    # girvan_newman
+    # greedy_modularity_communities
+    # asyn_lpa_communities
+    # label_propagation_communities
+
+    return graphs_train, graphs_val, graphs_test
+    
 
 
-
-def create_random_split(path, data, subgraph_type, ego_number=1000, hop_number=5):
+def create_random_split(path, data, subgraph_type, ego_number=1000, hop_number=5, algo='Louvain'):
     assert subgraph_type in ['ego', 'community']
 
     if subgraph_type == 'ego':
         subgraphs = get_data_ego(path, data, ego_number, hop_number)
-    
+
+        # pre-processing graphs for link prediction task
+
+        # inductive: train & test data are from different subgraphs
+        random.shuffle(subgraphs)
+        train_size = int(len(subgraphs) * 0.8)
+        val_size = int(len(subgraphs) * 0.1)
+        test_size = int(len(subgraphs) * 0.1)
+
+        graphs_train = subgraphs[:train_size]
+        graphs_test = subgraphs[train_size:train_size+test_size]
+        graphs_val = subgraphs[train_size+test_size:]
+
+        # tranductive: train & test data are from the same subgraphs
+        # TODO
+
     if subgraph_type == 'community':
-        subgraphs = get_data_community(path, data, '')
-
-    # pre-processing graphs for link prediction task
-
-    # inductive: train & test data are from different subgraphs
-    random.shuffle(subgraphs)
-    train_size = int(len(subgraphs) * 0.8)
-    val_size = int(len(subgraphs) * 0.1)
-    test_size = int(len(subgraphs) * 0.1)
-
-    graphs_train = subgraphs[:train_size]
-    graphs_test = subgraphs[train_size:train_size+test_size]
-    graphs_val = subgraphs[train_size+test_size:]
-
-    # tranductive: train & test data are from the same subgraphs
-    # TODO
-
+        graphs_train, graphs_val, graphs_test = get_data_community(path, data, algo)
 
     return graphs_train, graphs_val, graphs_test
 
@@ -298,5 +359,3 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
 
-
-# create_random_split("~/Downloads/dataset", 'dblp', 'ego', ego_number=10, hop_number=2)
