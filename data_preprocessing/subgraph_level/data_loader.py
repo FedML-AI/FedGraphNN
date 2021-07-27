@@ -13,7 +13,7 @@ import seaborn as sns
 import torch
 from torch_geometric.datasets import CitationFull
 from torch_geometric.data import Data, DataLoader
-from torch_geometric.utils import k_hop_subgraph
+from torch_geometric.utils import k_hop_subgraph, from_networkx
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
@@ -29,12 +29,12 @@ def _convert_to_nodeDegreeFeatures(graphs):
         graph_infos.append((graph, g.degree, graph.num_nodes))    # (graph, node_degrees, num_nodes)
 
     new_graphs = []
-    for i, tuple in enumerate(graph_infos):
-        idx, x = tuple[0].edge_index[0], tuple[0].x
-        deg = degree(idx, tuple[2], dtype=torch.long)
+    for i, tpl in enumerate(graph_infos):
+        idx, x = tpl[0].edge_index[0], tpl[0].x
+        deg = degree(idx, tpl[2], dtype=torch.long)
         deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
 
-        new_graph = tuple[0].clone()
+        new_graph = tpl[0].clone()
         new_graph.__setitem__('x', deg)
         new_graphs.append(new_graph)
 
@@ -75,7 +75,7 @@ def _subgraphing(g, partion):
     for nodes in nodelist:
         if len(nodes) < 2:
             continue
-        graphs.append(nx.subgraph(g, nodes))
+        graphs.append(from_networkx(nx.subgraph(g, nodes)))
     return graphs
 
 
