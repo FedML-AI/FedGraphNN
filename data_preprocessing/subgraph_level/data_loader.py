@@ -15,7 +15,7 @@ from torch_geometric.datasets import CitationFull
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import k_hop_subgraph
 
-# from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
+from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 
 def _convert_to_nodeDegreeFeatures(graphs):
@@ -359,4 +359,3 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
 
-create_random_split("~/Downloads/dataset/KG/", "FB15k-237", "community", algo='Louvain')
