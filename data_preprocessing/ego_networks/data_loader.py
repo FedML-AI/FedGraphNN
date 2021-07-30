@@ -13,7 +13,7 @@ import seaborn as sns
 import torch
 from torch_geometric.datasets import CitationFull
 from torch_geometric.data import Data, DataLoader
-from torch_geometric.utils import k_hop_subgraph, from_networkx
+from torch_geometric.utils import k_hop_subgraph, to_networkx
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
