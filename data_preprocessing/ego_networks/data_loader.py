@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import torch
-from torch_geometric.datasets import CitationFull
+from torch_geometric.datasets import Coauthor, CitationFull
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import k_hop_subgraph, to_networkx
 
@@ -68,8 +68,13 @@ def _mask_edges(graphs):
     pass
 
 
-def get_data(path, data, ego_number, hop_number, convert_x=False):
-    pyg_dataset = CitationFull(os.path.join(path, "CitationFull"), data)
+def get_data(path, data, type_network, ego_number, hop_number, convert_x=False):
+    assert type_network in ['citation', 'coauthor']
+    
+    if type_network == 'citation':
+        pyg_dataset = CitationFull(os.path.join(path, "CitationFull"), data)
+    if type_network == 'coauthor':
+        pyg_dataset = Coauthor(os.path.join(path, "Coauthor"), data)
 
     if not pyg_dataset[0].__contains__('x') or convert_x:
         graphs = _convert_to_nodeDegreeFeatures(pyg_dataset)
@@ -84,9 +89,9 @@ def get_data(path, data, ego_number, hop_number, convert_x=False):
     return subgraphs
 
 
-def create_random_split(path, data, ego_number=1000, hop_number=5):
+def create_random_split(path, data, type_network='coauthor', ego_number=1000, hop_number=5):
 
-    subgraphs = get_data(path, data, ego_number, hop_number)
+    subgraphs = get_data(path, data, type_network, ego_number, hop_number)
 
     # pre-processing graphs for link prediction task
 
@@ -137,7 +142,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True):
 
 
 def partition_data_by_sample_size(args, path, client_number, uniform=True, compact=True):
-    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset, args.ego_number, args.hop_number)
+    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset, args.type_network, args.ego_number, args.hop_number)
 
     num_train_samples = len(graphs_train)
     num_val_samples = len(graphs_val)
@@ -285,5 +290,4 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
 
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
-
 
