@@ -18,52 +18,6 @@ from torch_geometric.utils import k_hop_subgraph, from_networkx
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 
-def _convert_to_nodeDegreeFeatures(graphs):
-    graph_infos = []
-    maxdegree = 0
-    for i, graph in enumerate(graphs):
-        g = to_networkx(graph, to_undirected=True)
-        gdegree = max(dict(g.degree).values())
-        if gdegree > maxdegree:
-            maxdegree = gdegree
-        graph_infos.append((graph, g.degree, graph.num_nodes))    # (graph, node_degrees, num_nodes)
-
-    new_graphs = []
-    for i, tpl in enumerate(graph_infos):
-        idx, x = tpl[0].edge_index[0], tpl[0].x
-        deg = degree(idx, tpl[2], dtype=torch.long)
-        deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
-
-        new_graph = tpl[0].clone()
-        new_graph.__setitem__('x', deg)
-        new_graphs.append(new_graph)
-
-    return new_graphs
-
-
-def _get_egonetworks(g, ego_number, hop_number):
-    ego_number = min(ego_number, g.num_nodes)
-    # sample central nodes
-    egos = random.sample(range(g.num_nodes), ego_number)
-
-    egonetworks = []
-    for ego in egos:
-        # get ego-networks for sampled nodes
-        sub_nodes, sub_edge_index, _, _ = k_hop_subgraph(ego, hop_number, g.edge_index)
-
-        def re_index(source):
-            mapping = dict(zip(sub_nodes.numpy(), range(sub_nodes.shape[0])))
-            return mapping[source]
-
-        edge_index_u = [*map(re_index, sub_edge_index[0][:].numpy())]
-        edge_index_v = [*map(re_index, sub_edge_index[1][:].numpy())]
-
-        egonet = Data(edge_index=torch.tensor([edge_index_u, edge_index_v]), x=g.x[sub_nodes], y=g.y[sub_nodes])
-        egonetworks.append(egonet)
-
-    return egonetworks
-
-
 def _subgraphing(g, partion):
     nodelist = [None] * len(set(partion.values()))
     for k, v in partion.items():
@@ -79,25 +33,6 @@ def _subgraphing(g, partion):
     return graphs
 
 
-def _mask_edges(graphs):
-    pass
-
-
-def get_data_ego(path, data, ego_number, hop_number, convert_x=False):
-    pyg_dataset = CitationFull(os.path.join(path, "CitationFull"), data)
-    if not pyg_dataset[0].__contains__('x') or convert_x:
-        graphs = convert_to_nodeDegreeFeatures(pyg_dataset)
-    else:
-        graphs = [x for x in pyg_dataset]
-
-    subgraphs = []
-    for g in graphs:
-        egonetworks = _get_egonetworks(g, ego_number, hop_number)
-        subgraphs += egonetworks
-
-    return subgraphs
-
-
 def _read_mapping(path, data, filename):
     mapping = dict()
     df = pd.read_csv(os.path.join(path, data, filename), sep='\t', header=None, index_col=None)
@@ -111,7 +46,7 @@ def _read_mapping(path, data, filename):
     return mapping
 
 
-def _build_nxGraphs(path, data, filename, mapping_entities, mapping_relations):
+def _build_nxGraph(path, data, filename, mapping_entities, mapping_relations):
     G = nx.Graph()
     df = pd.read_csv(os.path.join(path, data, filename), sep='\t', header=None, index_col=None)
     for _, row in df.iterrows():
@@ -124,12 +59,14 @@ def _build_nxGraphs(path, data, filename, mapping_entities, mapping_relations):
 
 
 def get_data_community(path, data, algo):
+    """ For relation type prediction. """
+
     mapping_entities = _read_mapping(path, data, 'entities.dict')
     mapping_relations = _read_mapping(path, data, 'relations.dict')
 
-    g_train = _build_nxGraphs(path, data, 'train.txt', mapping_entities, mapping_relations)
-    g_test = _build_nxGraphs(path, data, 'test.txt', mapping_entities, mapping_relations)
-    g_val = _build_nxGraphs(path, data, 'valid.txt', mapping_entities, mapping_relations)
+    g_train = _build_nxGraph(path, data, 'train.txt', mapping_entities, mapping_relations)
+    g_val = _build_nxGraph(path, data, 'valid.txt', mapping_entities, mapping_relations)
+    g_test = _build_nxGraph(path, data, 'test.txt', mapping_entities, mapping_relations)
 
     assert algo in ['Louvain', 'girvan_newman', 'Clauset-Newman-Moore', 'asyn_lpa_communities', 'label_propagation_communities']
 
@@ -149,32 +86,47 @@ def get_data_community(path, data, algo):
     # label_propagation_communities
 
     return graphs_train, graphs_val, graphs_test
+
+
+def _build_pygGraph(relType, df, mapping_entities, mapping_relations):
+    df[0].replace(mapping_entities, inplace=True)
+    df[1].replace(mapping_relations, inplace=True)
+    df[2].replace(mapping_entities, inplace=True)
+
+    g = nx.Graph()
+    g.add_edges_from(zip(df[0], df[2]), edge_label=mapping_relations[relType])
     
+    return from_networkx(g)
 
 
-def create_random_split(path, data, subgraph_type, ego_number=1000, hop_number=5, algo='Louvain'):
-    assert subgraph_type in ['ego', 'community']
+def _build_graphs_by_relType(path, data, filename, mapping_entities, mapping_relations):
+    df = pd.read_csv(os.path.join(path, data, filename), sep='\t', header=None, index_col=None)
+    
+    graphs = [_build_pygGraph(relType, group, mapping_entities, mapping_relations) for relType, group in df.groupby(1)]
+    return graphs
 
-    if subgraph_type == 'ego':
-        subgraphs = get_data_ego(path, data, ego_number, hop_number)
 
-        # pre-processing graphs for link prediction task
+def get_data_community_byRelType(path, data):
+    """ For link prediction with communities grouped by the relation type. """
 
-        # inductive: train & test data are from different subgraphs
-        random.shuffle(subgraphs)
-        train_size = int(len(subgraphs) * 0.8)
-        val_size = int(len(subgraphs) * 0.1)
-        test_size = int(len(subgraphs) * 0.1)
+    mapping_entities = _read_mapping(path, data, 'entities.dict')
+    mapping_relations = _read_mapping(path, data, 'relations.dict')
 
-        graphs_train = subgraphs[:train_size]
-        graphs_test = subgraphs[train_size:train_size+test_size]
-        graphs_val = subgraphs[train_size+test_size:]
+    graphs_train = _build_graphs_by_relType(path, data, 'train.txt', mapping_entities, mapping_relations)
+    graphs_val = _build_graphs_by_relType(path, data, 'valid.txt', mapping_entities, mapping_relations)
+    graphs_test = _build_graphs_by_relType(path, data, 'test.txt', mapping_entities, mapping_relations)
 
-        # tranductive: train & test data are from the same subgraphs
-        # TODO
+    # number of graphs == number of relation type
+    return graphs_train, graphs_val, graphs_test
 
-    if subgraph_type == 'community':
+
+def create_random_split(path, data, pred_task='link_prediction', algo='Louvain'):
+    assert pred_task in ['relType_prediction', 'link_prediction']
+
+    if pred_task == 'relType_prediction':
         graphs_train, graphs_val, graphs_test = get_data_community(path, data, algo)
+    if pred_task == 'link_prediction':
+        graphs_train, graphs_val, graphs_test = get_data_community_byRelType(path, data)
 
     return graphs_train, graphs_val, graphs_test
 
@@ -210,7 +162,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True):
 
 
 def partition_data_by_sample_size(args, path, client_number, uniform=True, compact=True):
-    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset, args.subgraph_type, args.ego_number, args.hop_number)
+    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset, args.pred_task, args.part_algo)
 
     num_train_samples = len(graphs_train)
     num_val_samples = len(graphs_val)
@@ -358,4 +310,5 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
 
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
+
 
