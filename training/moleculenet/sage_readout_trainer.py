@@ -51,8 +51,7 @@ class SageMoleculeNetTrainer(ModelTrainer):
                 forest = [level.to(device=device, dtype=torch.long, non_blocking=True) for level in forest]
                 sizes = [level.size() for level in forest]
                 types = [level.dtype for level in forest]
-                print(sizes)
-                print(types)
+
                 feature_matrix = feature_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
                 label = label.to(device=device, dtype=torch.float32, non_blocking=True)
                 mask = mask.to(device=device, dtype=torch.float32, non_blocking=True)
