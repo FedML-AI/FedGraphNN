@@ -15,9 +15,8 @@ HIDDEN_DIM=${12}
 N_LAYERS=${13}
 DR=${14}
 DATASET=${15}
-DATA_DIR=${16}
-DIST_BACKEND=${17}
-CI=${18}
+FL_ALG=${16}
+
 
 PROCESS_NUM=`expr $WORKER_NUM + 1`
 echo $PROCESS_NUM
@@ -29,7 +28,6 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 main_fedavg.py \
   --gpu_num_per_server $GPU_NUM_PER_SERVER \
   --model $MODEL \
   --dataset $DATASET \
-  --data_dir $DATA_DIR \
   --hidden_size $HIDDEN_DIM \
   --dropout $DR \
   --partition_method $DISTRIBUTION  \
@@ -40,6 +38,5 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 main_fedavg.py \
   --epochs $EPOCH \
   --batch_size $BATCH_SIZE \
   --n_layers $N_LAYERS \
-  --lr $LR \
-  --backend $DIST_BACKEND \
-  --ci $CI
+  --fl_algorithm $FL_ALG \
+  --lr $LR 

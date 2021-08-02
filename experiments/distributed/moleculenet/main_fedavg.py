@@ -11,13 +11,15 @@ import wandb
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
 from data_preprocessing.molecule.data_loader import *
-from model.sage_readout import SageMoleculeNet
-from model.gat_readout import GatMoleculeNet
-from model.gcn_readout import GcnMoleculeNet
-from training.sage_readout_trainer import SageMoleculeNetTrainer
-from training.gat_readout_trainer import GatMoleculeNetTrainer
-from training.gcn_readout_trainer import GcnMoleculeNetTrainer
-from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init, FedML_FedAvg_distributed
+from model.moleculenet.sage_readout import SageMoleculeNet
+from model.moleculenet.gat_readout import GatMoleculeNet
+from model.moleculenet.gcn_readout import GcnMoleculeNet
+from training.moleculenet.sage_readout_trainer import SageMoleculeNetTrainer
+from training.moleculenet.gat_readout_trainer import GatMoleculeNetTrainer
+from training.moleculenet.gcn_readout_trainer import GcnMoleculeNetTrainer
+from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
+
+from experiments.distributed.initializer import add_federated_args, get_fl_algorithm_initializer, set_seed
 
 
 def add_args(parser):
@@ -29,10 +31,11 @@ def add_args(parser):
     parser.add_argument('--model', type=str, default='graphsage', metavar='N',
                         help='neural network used in training')
 
+
     parser.add_argument('--dataset', type=str, default='sider', metavar='N',
                         help='dataset used for training')
 
-    parser.add_argument('--data_dir', type=str, default='./../../../data/sider',
+    parser.add_argument('--data_dir', type=str, default='./../../../data/moleculenet/',
                         help='data directory')
 
     parser.add_argument('--normalize_features', type=bool, default=False, help='Whether or not to symmetrically normalize feat matrices')
@@ -41,17 +44,6 @@ def add_args(parser):
 
     parser.add_argument('--sparse_adjacency', type=bool, default=False, help='Whether or not the adj matrix is to be processed as a sparse matrix')
 
-    parser.add_argument('--partition_method', type=str, default='hetero', metavar='N',
-                        help='how to partition the dataset on local workers')
-
-    parser.add_argument('--partition_alpha', type=float, default=0.5, metavar='PA',
-                        help='partition alpha (default: 0.5)')
-
-    parser.add_argument('--client_num_in_total', type=int, default=1000, metavar='NN',
-                        help='number of workers in a distributed cluster')
-
-    parser.add_argument('--client_num_per_round', type=int, default=4, metavar='NN',
-                        help='number of workers')
 
     parser.add_argument('--batch_size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
@@ -73,25 +65,7 @@ def add_args(parser):
     parser.add_argument('--graph_embedding_dim', type=int, default=64,
                         help='Dimensionality of the vector space the molecule will be embedded in')
 
-    parser.add_argument('--client_optimizer', type=str, default='adam',
-                        help='SGD with momentum; adam')
-
-    parser.add_argument('--lr', type=float, default=0.001, metavar='LR',
-                        help='learning rate (default: 0.001)')
-
     parser.add_argument('--wd', help='weight decay parameter;', type=float, default=0.001)
-
-    parser.add_argument('--epochs', type=int, default=5, metavar='EP',
-                        help='how many epochs will be trained locally')
-
-    parser.add_argument('--comm_round', type=int, default=10,
-                        help='how many round of communications we should use')
-
-    parser.add_argument('--is_mobile', type=int, default=0,
-                        help='whether the program is running on the FedML-Mobile server side')
-
-    parser.add_argument('--frequency_of_the_test', type=int, default=1,
-                        help='the frequency of the algorithms')
 
     parser.add_argument('--gpu_server_num', type=int, default=1,
                         help='gpu_server_num')
@@ -99,21 +73,21 @@ def add_args(parser):
     parser.add_argument('--gpu_num_per_server', type=int, default=4,
                         help='gpu_num_per_server')
 
-    parser.add_argument('--ci', type=int, default=0,
-                        help='CI')
+    parser = add_federated_args(parser)
     args = parser.parse_args()
     return args
 
 
 def load_data(args, dataset_name):
-    if (args.dataset != 'sider') and (args.dataset != 'clintox') and (args.dataset != 'bbbp') and \
-            (args.dataset != 'bace') and (args.dataset != 'pcba') and (args.dataset != 'tox21'):
+    if (args.dataset != 'SIDER') and (args.dataset != 'ClinTox') and (args.dataset != 'BBPB') and \
+            (args.dataset != 'BACE') and (args.dataset != 'PCBA') and (args.dataset != 'Tox21') and \
+                (args.dataset != 'MUV') and (args.dataset != 'HIV') :
         raise Exception("no such dataset!")
 
     compact = (args.model == 'graphsage')
 
     logging.info("load_data. dataset_name = %s" % dataset_name)
-    _, feature_matrices, labels = get_data(args.data_dir)
+    _, feature_matrices, labels = get_data(args.data_dir + args.dataset)
     unif = True if args.partition_method == "homo" else False
     if args.model == 'gcn':
         args.normalize_features = True
@@ -127,7 +101,7 @@ def load_data(args, dataset_name):
     train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
         args,
-        args.data_dir,
+        args.data_dir + args.dataset,
         args.client_num_in_total,
         uniform=unif, compact=compact, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
 
@@ -194,7 +168,7 @@ if __name__ == "__main__":
     args = add_args(parser)
 
     # customize the process name
-    str_process_name = "FedMolecule:" + str(process_id)
+    str_process_name = "FedGraphNN:" + str(process_id)
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
@@ -216,19 +190,11 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
-            name="FedMolecule(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
+            name="FedGraphNN(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
             config=args
         )
 
-    # Set the random seed. The np.random seed determines the dataset partition.
-    # The torch_manual_seed determines the initial weight.
-    # We fix these two, so that we can reproduce the result.
-    random.seed(0)
-    np.random.seed(0)
-    torch.manual_seed(0)
-    torch.cuda.manual_seed_all(0)
-    torch.backends.cudnn.deterministic = True
-    torch.backends.cudnn.benchmark = False
+    set_seed(0)
 
     # GPU arrangement: Please customize this function according your own topology.
     # The GPU server list is configured at "mpi_host_file".
@@ -253,7 +219,8 @@ if __name__ == "__main__":
     model, trainer = create_model(args, args.model, feat_dim, num_cats, output_dim=None)
 
     # start "federated averaging (FedAvg)"
-    FedML_FedAvg_distributed(process_id, worker_number, device, comm,
+    fl_alg = get_fl_algorithm_initializer(args.fl_algorithm)
+    fl_alg(process_id, worker_number, device, comm,
                              model, train_data_num, train_data_global, test_data_global,
                              data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
                              trainer)
