@@ -4,6 +4,7 @@ import networkx as nx
 import copy
 import logging
 import pickle
+import numpy as np
 import pandas as pd
 import community as community_louvain
 
@@ -11,12 +12,17 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 import torch
+import torch.nn.functional as F
+
+from torch_geometric.utils import to_networkx, degree
+
 from torch_geometric.datasets import Coauthor, CitationFull
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import k_hop_subgraph, to_networkx
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
+from ..utils import DefaultCollator, WalkForestCollator
 
 def _convert_to_nodeDegreeFeatures(graphs):
     graph_infos = []
@@ -86,12 +92,12 @@ def get_data(path, data, type_network, ego_number, hop_number, convert_x=False):
         egonetworks = _get_egonetworks(g, ego_number, hop_number)
         subgraphs += egonetworks
 
-    return subgraphs
+    return subgraphs, pyg_dataset.num_classes
 
 
 def create_random_split(path, data, type_network='coauthor', ego_number=1000, hop_number=5):
 
-    subgraphs = get_data(path, data, type_network, ego_number, hop_number)
+    subgraphs,_ = get_data(path, data, type_network, ego_number, hop_number)
 
     # pre-processing graphs for link prediction task
 
@@ -129,15 +135,15 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True):
     logging.info("create_non_uniform_split******************************************")
 
     # plot the (#client, #sample) distribution
-    if is_train:
-        logging.info(sample_num_distribution)
-        plt.hist(sample_num_distribution)
-        plt.title("Sample Number Distribution")
-        plt.xlabel('number of samples')
-        plt.ylabel("number of clients")
-        fig_name = "x_hist.png"
-        fig_dir = os.path.join("./visualization", fig_name)
-        plt.savefig(fig_dir)
+    # if is_train:
+    #     logging.info(sample_num_distribution)
+    #     plt.hist(sample_num_distribution)
+    #     plt.title("Sample Number Distribution")
+    #     plt.xlabel('number of samples')
+    #     plt.ylabel("number of clients")
+    #     fig_name = "x_hist.png"
+    #     fig_dir = os.path.join("./visualization", fig_name)
+    #     plt.savefig(fig_dir)
     return idx_batch_per_client
 
 
@@ -195,7 +201,7 @@ def partition_data_by_sample_size(args, path, client_number, uniform=True, compa
         partition_dicts[client] = partition_dict
 
     # plot the label distribution similarity score
-    visualize_label_distribution_similarity_score(labels_of_all_clients)
+    #visualize_label_distribution_similarity_score(labels_of_all_clients)
 
     global_data_dict = {
         'train': graphs_train,
