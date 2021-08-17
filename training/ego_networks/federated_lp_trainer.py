@@ -8,7 +8,7 @@ import wandb
 
 from torch_geometric.utils import negative_sampling
 
-from sklearn.metrics import average_precision_score,auc_score
+from sklearn.metrics import average_precision_score, roc_auc_score
 
 from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
@@ -24,7 +24,7 @@ class FedLinkPredTrainer(ModelTrainer):
     def train(self, train_data, device, args):
         model = self.model
 
-        self.metric_fn = average_precision_score if args.metric =="AP" else auc_score
+        self.metric_fn = average_precision_score if args.metric =="AP" else roc_auc_score
 
         model.to(device)
         model.train()
@@ -63,10 +63,6 @@ class FedLinkPredTrainer(ModelTrainer):
                 loss = F.binary_cross_entropy_with_logits(link_logits, link_labels)
                 loss.backward()
                 optimizer.step()
-
-                cum_score = self.metric_fn(link_labels, link_logits)
-                ngraphs += batch.num_graphs
-            score = cum_score / ngraphs
 
             # if val_data:
             #     acc_v, _ = self.test(val_data, device)
