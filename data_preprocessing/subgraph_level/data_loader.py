@@ -36,18 +36,10 @@ def get_data_community(path, data, pred_task):
     return graphs_train, graphs_val, graphs_test
 
 
-def create_random_split(path, data, pred_task='link_pred', algo='Louvain'):
-    assert pred_task in ['rel_pred', 'link_pred']
+def create_random_split(path, data, pred_task='link_prediction', algo='Louvain'):
+    assert pred_task in ['relType_prediction', 'link_prediction']
 
-<<<<<<< Updated upstream
-    graphs_train, graphs_val, graphs_test = None, None , None
-    if pred_task == 'rel_pred':
-        graphs_train, graphs_val, graphs_test = get_data_community(path, data, algo)
-    if pred_task == 'link_pred':
-        graphs_train, graphs_val, graphs_test = get_data_community_byRelType(path, data)
-=======
     graphs_train, graphs_val, graphs_test = get_data_community(path, data, pred_task)
->>>>>>> Stashed changes
 
     return graphs_train, graphs_val, graphs_test
 
