@@ -83,7 +83,6 @@ class WalkForestCollator(object):
         node_ids = np.array(list(range(feature_matrix.shape[0])), dtype=np.int32)
         forest = np_traverse(comp_adj, node_ids, fanouts)
         torch_forest = [torch.from_numpy(forest[0]).flatten()]
-        mask = np.where(np.isnan(label), 0.0, 1.0)
         label = np.where(np.isnan(label), 0.0, label)
 
         for i in range(len(forest) - 1):
@@ -102,8 +101,7 @@ class WalkForestCollator(object):
             scaler.fit(feature_matrix)
             normalized_feature_matrix = scaler.transform(feature_matrix)
 
-        return torch_forest, torch.as_tensor(normalized_feature_matrix, dtype=torch.float32), torch.as_tensor(label, dtype=torch.float32), \
-               torch.as_tensor(mask, dtype=torch.float32)
+        return torch_forest, torch.as_tensor(normalized_feature_matrix, dtype=torch.float32), torch.as_tensor(label, dtype=torch.float32), 
 
 
 class DefaultCollator(object):
@@ -113,7 +111,6 @@ class DefaultCollator(object):
 
     def __call__(self, molecule):
         adj_matrix, feature_matrix, label, _ = molecule[0]
-        mask = np.where(np.isnan(label), 0.0, 1.0)
         label = np.where(np.isnan(label), 0.0, label)
 
         if self.normalize_features:
@@ -140,4 +137,4 @@ class DefaultCollator(object):
 
         return torch.as_tensor(np.array(normalized_adj_matrix.todense()), dtype=torch.float32), \
                torch.as_tensor(normalized_feature_matrix, dtype=torch.float32), \
-               torch.as_tensor(label, dtype=torch.float32), torch.as_tensor(mask, dtype=torch.float32)
+               torch.as_tensor(label, dtype=torch.float32)

@@ -91,6 +91,8 @@ def load_data(args, dataset_name):
 
     compact = (args.model == 'graphsage')
 
+    args.metric = "AP"
+
     unif = True if args.partition_method == "homo" else False
 
     sgs, num_cats = get_data(args.data_dir, args.dataset, args.type_network, args.ego_number, args.hop_number)
@@ -119,7 +121,7 @@ def load_data(args, dataset_name):
 def create_model(args, model_name, feat_dim, num_cats, output_dim):
     logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, num_cats))
     if model_name == 'gcn':
-        model = GCNLinkPred(nfeat = feat_dim, nhid = args.hidden_size, nclass = num_cats, nlayer = args.n_layers, dropout = args.dropout)
+        model = GCNLinkPred(in_channels = feat_dim, out_channels = feat_dim)
     else:
         raise Exception("such model does not exist !")
     trainer = FedLinkPredTrainer(model)

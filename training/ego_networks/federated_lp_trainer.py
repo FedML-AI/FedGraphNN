@@ -74,7 +74,7 @@ class FedLinkPredTrainer(ModelTrainer):
             if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (idx_batch == len(train_data) - 1):
                 if test_data is not None:
                     test_score, _ = self.test(self.test_data, device)
-                    print('Epoch = {}, Iter = {}/{}: Test accuracy = {}'.format(epoch, idx_batch + 1, len(train_data), acc))
+                    print('Epoch = {}, Iter = {}/{}: Test accuracy = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
                     if test_score > max_test_score:
                         max_test_score = test_score
                         best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}

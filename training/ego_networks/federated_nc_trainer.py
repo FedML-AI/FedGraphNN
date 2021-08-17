@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import torch
 import wandb
-from sklearn.metrics import f1_score, auc
+from sklearn.metrics import f1_score
 
 from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 

@@ -11,12 +11,12 @@ import wandb
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
 from data_preprocessing.molecule.data_loader import *
-from model.sage_readout import SageMoleculeNet
-from model.gat_readout import GatMoleculeNet
-from model.gcn_readout import GcnMoleculeNet
-from training.sage_readout_trainer import SageMoleculeNetTrainer
-from training.gat_readout_trainer import GatMoleculeNetTrainer
-from training.gcn_readout_trainer import GcnMoleculeNetTrainer
+from model.moleculenet.sage_readout import SageMoleculeNet
+from model.moleculenet.gat_readout import GatMoleculeNet
+from model.moleculenet.gcn_readout import GcnMoleculeNet
+from training.moleculenet.sage_readout_trainer import SageMoleculeNetTrainer
+from training.moleculenet.gat_readout_trainer import GatMoleculeNetTrainer
+from training.moleculenet.gcn_readout_trainer import GcnMoleculeNetTrainer
 from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init, FedML_FedAvg_distributed
 
 
