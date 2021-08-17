@@ -117,12 +117,9 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    if args.dataset not in ["CS", "Physics", "Cora", "Cora_ML", "CiteSeer","DBLP", "PubMed" ]:
+    if args.dataset not in ["Cora", "Cora_ML", "CiteSeer","DBLP", "PubMed" ]:
         raise Exception("no such dataset!")
-    elif args.dataset in ["CS", "Physics"]:
-        args.type_network = "coauthor"
-    else:
-        args.type_network = "citation"
+    args.type_network = "citation"
 
     compact = (args.model == 'graphsage')
 
