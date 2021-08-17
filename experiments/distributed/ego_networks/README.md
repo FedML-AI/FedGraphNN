@@ -1,22 +1,21 @@
+# Node-Level Tasks (Ego Networks)
+
+
 ## Data Preparation
+
 
 ## Experiments 
 
 
-### Distributed/Federated Molecule Property Classification experiments
+### Distributed/Federated Node Classification experiments
 ```
-sh run_fedavg_distributed_pytorch.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256  sider "./../../../data/sider/" 0
-
-##run on background
-nohup sh run_fedavg_distributed_pytorch.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256  sider "./../../../data/sider/" 0 > ./fedavg-graphsage.log 2>&1 &
+sh run_fed_node_clf.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
 ```
 
-### Distributed/Federated Molecule Property Regression experiments
+### Distributed/Federated Link Prediction experiments
 ```
-sh run_fedavg_distributed_reg.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256 freesolv "./../../../data/freesolv/" 0
+sh run_fed_link_pred.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
 
-##run on background
-nohup sh run_fedavg_distributed_reg.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256 freesolv "./../../../data/freesolv/" 0 > ./fedavg-graphsage.log 2>&1 &
 ```
 
 #### Arguments for Distributed/Federated Training
