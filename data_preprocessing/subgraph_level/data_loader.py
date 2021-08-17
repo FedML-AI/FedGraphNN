@@ -6,7 +6,7 @@ import logging
 import pickle
 import pandas as pd
 import community as community_louvain
-
+import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
@@ -120,12 +120,13 @@ def get_data_community_byRelType(path, data):
     return graphs_train, graphs_val, graphs_test
 
 
-def create_random_split(path, data, pred_task='link_prediction', algo='Louvain'):
-    assert pred_task in ['relType_prediction', 'link_prediction']
+def create_random_split(path, data, pred_task='link_pred', algo='Louvain'):
+    assert pred_task in ['rel_pred', 'link_pred']
 
-    if pred_task == 'relType_prediction':
+    graphs_train, graphs_val, graphs_test = None, None , None
+    if pred_task == 'rel_pred':
         graphs_train, graphs_val, graphs_test = get_data_community(path, data, algo)
-    if pred_task == 'link_prediction':
+    if pred_task == 'link_pred':
         graphs_train, graphs_val, graphs_test = get_data_community_byRelType(path, data)
 
     return graphs_train, graphs_val, graphs_test

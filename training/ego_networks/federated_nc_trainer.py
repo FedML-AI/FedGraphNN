@@ -10,7 +10,7 @@ from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
 # Trainer for MoleculeNet. The evaluation metric is ROC-AUC
 
-class FederatedNodeClfTrainer(ModelTrainer):
+class FedNodeClfTrainer(ModelTrainer):
 
     def get_model_params(self):
         return self.model.cpu().state_dict()
@@ -49,8 +49,6 @@ class FederatedNodeClfTrainer(ModelTrainer):
                 optimizer.zero_grad()
                 pred = model(batch)
                 label = batch.y
-                print(pred)
-                print(pred.shape, label.shape, batch)
                 acc_sum += pred.argmax(dim=1).eq(label).sum().item()
                 loss = model.loss(pred, label)
                 loss.backward()
