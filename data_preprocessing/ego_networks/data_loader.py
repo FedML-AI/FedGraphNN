@@ -1,105 +1,32 @@
 import os
 import random
-import networkx as nx
 import copy
 import logging
 import pickle
 import numpy as np
-import pandas as pd
-import community as community_louvain
 
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import torch
-import torch.nn.functional as F
-
-from torch_geometric.utils import to_networkx, degree
-
 from torch_geometric.datasets import Coauthor, CitationFull
-from torch_geometric.data import Data, DataLoader
-from torch_geometric.utils import k_hop_subgraph, to_networkx
+from torch_geometric.data import DataLoader
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 from ..utils import DefaultCollator, WalkForestCollator
 
-def _convert_to_nodeDegreeFeatures(graphs):
-    graph_infos = []
-    maxdegree = 0
-    for i, graph in enumerate(graphs):
-        g = to_networkx(graph, to_undirected=True)
-        gdegree = max(dict(g.degree).values())
-        if gdegree > maxdegree:
-            maxdegree = gdegree
-        graph_infos.append((graph, g.degree, graph.num_nodes))    # (graph, node_degrees, num_nodes)
-
-    new_graphs = []
-    for i, tpl in enumerate(graph_infos):
-        idx, x = tpl[0].edge_index[0], tpl[0].x
-        deg = degree(idx, tpl[2], dtype=torch.long)
-        deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
-
-        new_graph = tpl[0].clone()
-        new_graph.__setitem__('x', deg)
-        new_graphs.append(new_graph)
-
-    return new_graphs
 
 
-def _get_egonetworks(g, ego_number, hop_number):
-    ego_number = min(ego_number, g.num_nodes)
-    # sample central nodes
-    egos = random.sample(range(g.num_nodes), ego_number)
-
-    egonetworks = []
-    for ego in egos:
-        # get ego-networks for sampled nodes
-        sub_nodes, sub_edge_index, _, _ = k_hop_subgraph(ego, hop_number, g.edge_index)
-
-        def re_index(source):
-            mapping = dict(zip(sub_nodes.numpy(), range(sub_nodes.shape[0])))
-            return mapping[source]
-
-        edge_index_u = [*map(re_index, sub_edge_index[0][:].numpy())]
-        edge_index_v = [*map(re_index, sub_edge_index[1][:].numpy())]
-
-        egonet = Data(edge_index=torch.tensor([edge_index_u, edge_index_v]), x=g.x[sub_nodes], y=g.y[sub_nodes])
-        egonetworks.append(egonet)
-
-    return egonetworks
-
-
-def _mask_edges(graphs):
-    pass
-
-
-def get_data(path, data, type_network, ego_number, hop_number, convert_x=False):
-    assert type_network in ['citation', 'coauthor']
+def get_data(path, data):
     
-    if type_network == 'citation':
-        pyg_dataset = CitationFull(os.path.join(path, "CitationFull"), data)
-    if type_network == 'coauthor':
-        pyg_dataset = Coauthor(os.path.join(path, "Coauthor"), data)
+    subgraphs = pickle.load(open(os.join(path, data, 'egonetworks.pkl'), 'rb'))
 
-    if not pyg_dataset[0].__contains__('x') or convert_x:
-        graphs = _convert_to_nodeDegreeFeatures(pyg_dataset)
-    else:
-        graphs = [x for x in pyg_dataset]
-
-    subgraphs = []
-    for g in graphs:
-        egonetworks = _get_egonetworks(g, ego_number, hop_number)
-        subgraphs += egonetworks
-
-    return subgraphs, pyg_dataset.num_classes
+    return subgraphs
 
 
-def create_random_split(path, data, type_network='coauthor', ego_number=1000, hop_number=5):
+def create_random_split(path, data):
 
-    subgraphs,_ = get_data(path, data, type_network, ego_number, hop_number)
-
-    # pre-processing graphs for link prediction task
+    subgraphs = get_data(path, data, type_network, ego_number, hop_number)
 
     # inductive: train & test data are from different subgraphs
     random.shuffle(subgraphs)

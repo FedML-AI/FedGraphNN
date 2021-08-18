@@ -8,7 +8,6 @@ import pandas as pd
 import community as community_louvain
 
 import torch
-from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import from_networkx
 
 from pathlib import Path

@@ -1,19 +1,16 @@
 import os
 import random
-import networkx as nx
 import copy
 import logging
 import pickle
-import pandas as pd
-import community as community_louvain
 import numpy as np
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 import torch
 from torch_geometric.datasets import CitationFull
-from torch_geometric.data import Data, DataLoader
-from torch_geometric.utils import from_networkx
+from torch_geometric.data import DataLoader
 
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
