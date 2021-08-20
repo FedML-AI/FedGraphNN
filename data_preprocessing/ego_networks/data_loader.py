@@ -19,14 +19,14 @@ from ..utils import DefaultCollator, WalkForestCollator
 
 def get_data(path, data):
     
-    subgraphs = pickle.load(open(os.join(path, data, 'egonetworks.pkl'), 'rb'))
+    subgraphs, num_graphs, num_features, num_labels = pickle.load(open(os.path.join(path, data, 'egonetworks.pkl'), 'rb'))
 
-    return subgraphs
+    return subgraphs, num_graphs, num_features, num_labels 
 
 
 def create_random_split(path, data):
 
-    subgraphs = get_data(path, data, type_network, ego_number, hop_number)
+    subgraphs, num_graphs, num_features, num_labels = get_data(path, data, type_network, ego_number, hop_number)
 
     # inductive: train & test data are from different subgraphs
     random.shuffle(subgraphs)

@@ -57,37 +57,40 @@ def _to_egoNet(g, ego, hop_number):
 
 def _get_egonetworks(g, ego_number, hop_number):
     ego_number = min(ego_number, g.num_nodes)
+
+    num_features = g.num_node_features
+    num_labels = len(g.y.unique())
+
     # sample central nodes
     # nodes are names as 0, 1, 2, ...
     egos = random.sample(range(g.num_nodes), ego_number)
     egonetworks = [_to_egoNet(g, ego, hop_number) for ego in egos]
 
-    return egonetworks
+    return egonetworks, ego_number, num_features, num_labels
 
 
-def get_data(path, data, type_network, ego_number, hop_number, convert_x=False):
-    assert type_network in ['citation', 'coauthor', 'social']
+def get_data(path, data, type_network, ego_number, hop_number):
+    assert type_network in ['citation', 'coauthor']
     
     start = time.time()
     if type_network == 'citation':
         pyg_dataset = CitationFull(os.path.join(path, "CitationFull"), data)
-        subgraphs = _get_egonetworks(pyg_dataset[0], ego_number, hop_number)
+        subgraphs, num_graphs, num_features, num_labels = _get_egonetworks(pyg_dataset[0], ego_number, hop_number)
     if type_network == 'coauthor':
         pyg_dataset = Coauthor(os.path.join(path, "Coauthor"), data)
-        subgraphs = _get_egonetworks(pyg_dataset[0], ego_number, hop_number)
-    if type_network == 'social':
-        pyg_dataset = TUDataset(os.path.join(path, "TUDataset"), data)
-        ego_number = min(ego_number, len(pyg_dataset))
-        subgraphs = random.sample(list(pyg_dataset), ego_number)
+        subgraphs, num_graphs, num_features, num_labels = _get_egonetworks(pyg_dataset[0], ego_number, hop_number)
+    # if type_network == 'social':
+    #     pyg_dataset = TUDataset(os.path.join(path, "TUDataset"), data)
+    #     ego_number = min(ego_number, len(pyg_dataset))
+    #     subgraphs = random.sample(list(pyg_dataset), ego_number)
     print("Sampled ego-networks:", time.time() - start)
 
     start = time.time()
-    print(subgraphs[0], convert_x)
-    if not subgraphs[0].__contains__('x') or convert_x:
+    if not subgraphs[0].__contains__('x'):
         subgraphs = _convert_to_nodeDegreeFeatures(subgraphs)
-    print("Converted node features:", time.time() - start)
+        print("Converted node features:", time.time() - start)
 
-    return subgraphs
+    return subgraphs, num_graphs, num_features, num_labels
 
 
 
@@ -103,21 +106,19 @@ if __name__ == '__main__':
                         type=int, default=1000)
     parser.add_argument('--hop_number', help='the number of hops',
                         type=int, default=2)
-    parser.add_argument('--convert_x', help='whether to convert original node features to one-hot degree features',
-                        type=bool, default=False)
 
     try:
         args = parser.parse_args()
     except IOError as msg:
         parser.error(str(msg))
 
-    subgraphs = get_data(args.path, args.data, args.type_network, args.ego_number, args.hop_number, args.convert_x)
+    subgraphs, num_graphs, num_features, num_labels = get_data(args.path, args.data, args.type_network, args.ego_number, args.hop_number)
 
     if args.type_network == 'citation':
         outfile = os.path.join(args.path, "CitationFull", args.data, 'egonetworks.pkl')
     if args.type_network == 'coauthor':
         outfile = os.path.join(args.path, "Coauthor", args.data, 'egonetworks.pkl')
-    if args.type_network == 'social':
-        outfile = os.path.join(args.path, "TUDataset", args.data, 'egonetworks.pkl')
-    pickle.dump(subgraphs, open(outfile, 'wb'))
+    # if args.type_network == 'social':
+    #     outfile = os.path.join(args.path, "TUDataset", args.data, 'egonetworks.pkl')
+    pickle.dump([subgraphs, num_graphs, num_features, num_labels], open(outfile, 'wb'))
     print(f"Wrote to {outfile}.")
