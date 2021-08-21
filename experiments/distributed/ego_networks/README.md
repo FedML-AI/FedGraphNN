@@ -3,9 +3,26 @@
 
 ## Data Preparation
 
+For each dataset, ego-networks needs to be sampled first.  
+```
+python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --type_network citation --ego_number 1000 --hop_number 2
+```
+#### Arguments for Data Preparation code
+This is an ordered list of arguments used in distributed/federated experiments. Note, there are additional parameters for this setting.
+```
+--path -> the path for loading dataset
+
+--data -> the name of dataset ()
+
+--type_network -> 'the type of dataset': ["citation", "coauthor", "social"]
+
+--ego_number --> 'the number of egos sampled'
+
+--hop_number --> 'the number of hops'
+```
+
 
 ## Experiments 
-
 
 ### Distributed/Federated Node Classification experiments
 ```

@@ -12,6 +12,7 @@ After `git clone`-ing this repository, please run the following command to insta
 conda create -n fedgraphnn python=3.7
 conda activate fedgraphnn
 conda install pytorch==1.6.0 torchvision==0.7.0 cudatoolkit=10.1 -c pytorch -n fedgraphnn
+conda install pytorch-geometric -c rusty1s -c conda-forge
 conda install -c anaconda mpi4py grpcio
 conda install scikit-learn numpy h5py setproctitle networkx
 pip install -r requirements.txt 
@@ -21,77 +22,27 @@ pip install -r FedML/requirements.txt
 
 ## Data Preparation
 
+1. Graph - level 
+      a. MoleculeNet [] []
+      b. Social Networks [] []
+2. Sub-graph Level
+      a. Knowledge Graphs [] []
+      b. Recommendation Systems [] []
+3. Node-level
+      a. Coauthor Networks [] []
+      b. Citation Networks [] []
 
 ## Experiments 
 
-
-### Centralized Molecule Property Classification experiments
-```
-python experiments/centralized/moleculenet/molecule_classification_multilabel.py
-```
-
-### Centralized Molecule Property Regression experiments
-```
-python experiments/centralized/moleculenet/molecule_regression_multivariate.py
-```
-
-#### Arguments for Centralized Training
-This is a list of arguments used in centralized experiments. 
-```
---dataset --> Dataset used for training
---data_dir' --> Data directory
---partition_method -> how to partition the dataset
---sage_hidden_size' -->Size of GraphSAGE hidden layer
---node_embedding_dim --> Dimensionality of the vector space the atoms will be embedded in
---sage_dropout --> Dropout used between GraphSAGE layers
---readout_hidden_dim --> Size of the readout hidden layer
---graph_embedding_dim --> Dimensionality of the vector space the molecule will be embedded in
---client_optimizer -> Optimizer function(Adam or SGD)
---lr --> learning rate (default: 0.0015)
---wd --> Weight decay(default=0.001)
---epochs -->Number of epochs
---frequency_of_the_test --> How frequently to run eval
---device -->gpu device for training
-```
-
-### Distributed/Federated Molecule Property Classification experiments
-```
-sh run_fedavg_distributed_pytorch.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256  sider "./../../../data/sider/" 0
-
-##run on background
-nohup sh run_fedavg_distributed_pytorch.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256  sider "./../../../data/sider/" 0 > ./fedavg-graphsage.log 2>&1 &
-```
-
-### Distributed/Federated Molecule Property Regression experiments
-```
-sh run_fedavg_distributed_reg.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256 freesolv "./../../../data/freesolv/" 0
-
-##run on background
-nohup sh run_fedavg_distributed_reg.sh 6 1 1 1 graphsage homo 150 1 1 0.0015 256 256 0.3 256 256 freesolv "./../../../data/freesolv/" 0 > ./fedavg-graphsage.log 2>&1 &
-```
-
-#### Arguments for Distributed/Federated Training
-This is an ordered list of arguments used in distributed/federated experiments. Note, there are additional parameters for this setting.
-```
-CLIENT_NUM=$1 -> Number of clients in dist/fed setting
-WORKER_NUM=$2 -> Number of workers
-SERVER_NUM=$3 -> Number of servers
-GPU_NUM_PER_SERVER=$4 -> GPU number per server
-MODEL=$5 -> Model name
-DISTRIBUTION=$6 -> Dataset distribution. homo for IID splitting. hetero for non-IID splitting.
-ROUND=$7 -> Number of Distiributed/Federated Learning Rounds
-EPOCH=$8 -> Number of epochs to train clients' local models
-BATCH_SIZE=$9 -> Batch size 
-LR=${10}  -> learning rate
-SAGE_DIM=${11} -> Dimenionality of GraphSAGE embedding
-NODE_DIM=${12} -> Dimensionality of node embeddings
-SAGE_DR=${13} -> Dropout rate applied between GraphSAGE Layers
-READ_DIM=${14} -> Dimensioanlity of readout embedding
-GRAPH_DIM=${15} -> Dimensionality of graph embedding
-DATASET=${16} -> Dataset name (Please check data folder to see all available datasets)
-DATA_DIR=${17} -> Dataset directory
-CI=${18}
-```
+1. Graph - level 
+      a. MoleculeNet [centralized] [federated]
+      b. Social Networks [] [federated]
+2. Sub-graph Level
+      a. Knowledge Graphs [] [federated]
+      b. Recommendation Systems [] [federated]
+3. Node-level
+      a. Coauthor Networks [] [federated]
+      b. Citation Networks [] [federated]
 
 ## Code Structure of FedGraphNN
 <!-- Note: The code of FedGraphNN only uses `FedML/fedml_core` and `FedML/fedml_api`.
@@ -130,7 +81,6 @@ git add FedML
 git commit -m "updating submodule FedML to latest"
 git push
 ```
-
 
 ## Citation
 Please cite our FedML paper if it helps your research.
