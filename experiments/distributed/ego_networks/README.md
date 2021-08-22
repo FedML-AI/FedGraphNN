@@ -6,7 +6,10 @@
 For each dataset, ego-networks needs to be sampled first.  
 ```
 WORKSPACE=/home/$USER/FedGraphNN
+# WORKSPACE=/Users/chaoyanghe/sourcecode/FedGraphNN
+
 cd $WORKSPACE/data_preprocessing/ego_networks
+mkdir $WORKSPACE/data/ego-networks
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --type_network citation --ego_number 1000 --hop_number 2
 ```
 #### Arguments for Data Preparation code
@@ -36,13 +39,16 @@ collaboration networks (# nodes): e.g. CS (18333), Physics (34493)
 
 ### Distributed/Federated Node Classification experiments
 ```
+WORKSPACE=/home/$USER/FedGraphNN
+cd $WORKSPACE/experiments/distributed/ego_networks
 sh run_fed_node_clf.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
 ```
 
 ### Distributed/Federated Link Prediction experiments
 ```
+WORKSPACE=/home/$USER/FedGraphNN
+cd $WORKSPACE/experiments/distributed/ego_networks
 sh run_fed_link_pred.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
-
 ```
 
 #### Arguments for Distributed/Federated Training

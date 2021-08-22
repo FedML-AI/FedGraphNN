@@ -1,5 +1,5 @@
 #!/bin/bash
-sex -x
+set -x
 
 # install pytorch (please double check your CUDA version before executing this shell)
 conda install pytorch torchvision torchaudio cudatoolkit=11.0 -c pytorch -c nvidia
