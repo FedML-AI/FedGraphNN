@@ -18,12 +18,15 @@ mkdir $WORKSPACE/data/ego-networks/PubMed
 mkdir $WORKSPACE/data/ego-networks/CS
 mkdir $WORKSPACE/data/ego-networks/Physics
 
+# FL client number = 10, ego number = 1000
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data cora --ego_number 1000 --hop_number 2
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --ego_number 1000 --hop_number 2
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data DBLP --ego_number 1000 --hop_number 2
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data PubMed --ego_number 1000 --hop_number 2
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data CS --ego_number 1000 --hop_number 2
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data Physics --ego_number 1000 --hop_number 2
+
+# FL client number = 10, ego number = 10
+python sampleEgonetworks.py --path ./../../data/ego-networks/ --data CS --ego_number 10 --hop_number 2
+python sampleEgonetworks.py --path ./../../data/ego-networks/ --data Physics --ego_number 10 --hop_number 2
 ```
 
 #### Arguments for Data Preparation code
@@ -55,7 +58,9 @@ collaboration networks (# nodes): e.g. CS (18333), Physics (34493)
 ```
 WORKSPACE=/home/$USER/FedGraphNN
 cd $WORKSPACE/experiments/distributed/ego_networks
-sh run_fed_node_clf.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
+
+sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
+sh run_fed_node_clf.sh 10 10 1 1 gcn homo 0.5 20 1 32 0.0015 32 3 0.3 CS
 ```
 
 ### Distributed/Federated Link Prediction experiments
