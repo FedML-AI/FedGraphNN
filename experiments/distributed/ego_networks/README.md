@@ -10,7 +10,7 @@ WORKSPACE=/home/$USER/FedGraphNN
 
 cd $WORKSPACE/data_preprocessing/ego_networks
 mkdir $WORKSPACE/data/ego-networks
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --type_network citation --ego_number 1000 --hop_number 2
+python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --ego_number 1000 --hop_number 2
 ```
 #### Arguments for Data Preparation code
 This is an ordered list of arguments used in distributed/federated experiments. Note, there are additional parameters for this setting.
@@ -18,8 +18,6 @@ This is an ordered list of arguments used in distributed/federated experiments. 
 --path -> the path for loading dataset
 
 --data -> the name of dataset ()
-
---type_network -> 'the type of dataset': ["citation", "coauthor", "social"]
 
 --ego_number --> 'the number of egos sampled'
 

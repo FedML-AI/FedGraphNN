@@ -8,6 +8,7 @@ class GCNNodeCLF(torch.nn.Module):
         super(GCNNodeCLF, self).__init__()
         self.num_layers = nlayer
         self.dropout = dropout
+        self.nclass= nclass
 
         self.pre = torch.nn.Sequential(torch.nn.Linear(nfeat, nhid))
 
