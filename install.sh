@@ -1,9 +1,6 @@
 #!/bin/bash
 sex -x
 
-conda create -n fedgraphnn python=3.8.3
-conda activate fedgraphnn
-
 # install pytorch (please double check your CUDA version before executing this shell)
 conda install pytorch torchvision torchaudio cudatoolkit=11.0 -c pytorch -c nvidia
 conda install -c anaconda mpi4py grpcio
