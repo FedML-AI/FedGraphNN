@@ -37,4 +37,4 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 fed_node_clf.py \
   --epochs $EPOCH \
   --batch_size $BATCH_SIZE \
   --n_layers $N_LAYERS \
-  --lr $LR \
+  --lr $LR

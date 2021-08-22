@@ -35,4 +35,4 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 fed_subgraph_link_pred
   --comm_round $ROUND \
   --epochs $EPOCH \
   --batch_size $BATCH_SIZE \
-  --lr $LR \
+  --lr $LR

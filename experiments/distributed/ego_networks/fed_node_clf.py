@@ -19,6 +19,7 @@ from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 
 from experiments.distributed.initializer import add_federated_args, get_fl_algorithm_initializer, set_seed
 
+
 def add_args(parser):
     """
     parser : argparse.ArgumentParser
@@ -31,20 +32,23 @@ def add_args(parser):
     parser.add_argument('--dataset', type=str, default='CS', metavar='N',
                         help='dataset used for training')
 
-    parser.add_argument('--data_dir', type=str, default='./../../../data/ego-networks/CitationFull',
+    parser.add_argument('--data_dir', type=str, default='./../../../data/ego-networks',
                         help='data directory')
 
     parser.add_argument('--ego_number', type=int, default=1000,
                         help='Sampled ego nodes')
-                
+
     parser.add_argument('--hop_number', type=int, default=5,
                         help='Number of hops')
 
-    parser.add_argument('--normalize_features', type=bool, default=False, help='Whether or not to symmetrically normalize feat matrices')
+    parser.add_argument('--normalize_features', type=bool, default=False,
+                        help='Whether or not to symmetrically normalize feat matrices')
 
-    parser.add_argument('--normalize_adjacency', type=bool, default=False, help='Whether or not to symmetrically normalize adj matrices')
+    parser.add_argument('--normalize_adjacency', type=bool, default=False,
+                        help='Whether or not to symmetrically normalize adj matrices')
 
-    parser.add_argument('--sparse_adjacency', type=bool, default=False, help='Whether or not the adj matrix is to be processed as a sparse matrix')
+    parser.add_argument('--sparse_adjacency', type=bool, default=False,
+                        help='Whether or not the adj matrix is to be processed as a sparse matrix')
 
     parser.add_argument('--batch_size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
@@ -82,36 +86,34 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    num_cats, feat_dim = 0 , 0
-    if args.dataset not in ["CS", "Physics", "cora", "citeseer","DBLP", "PubMed" ]:
+    num_cats, feat_dim = 0, 0
+    if args.dataset not in ["CS", "Physics", "cora", "citeseer", "DBLP", "PubMed"]:
         raise Exception("no such dataset!")
     elif args.dataset in ["CS", "Physics"]:
         args.type_network = "coauthor"
     else:
-
         args.type_network = "citation"
 
     compact = (args.model == 'graphsage')
 
     unif = True if args.partition_method == "homo" else False
 
-
     if args.model == 'gcn':
         args.normalize_features = True
         args.normalize_adjacency = True
 
-    _, _,feat_dim, num_cats= get_data(args.data_dir, args.dataset)
+    _, _, feat_dim, num_cats = get_data(args.data_dir, args.dataset)
 
     train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
         args,
         args.data_dir,
         args.client_num_in_total,
-        uniform=unif, compact=compact, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
+        uniform=unif, compact=compact, normalize_features=args.normalize_features,
+        normalize_adj=args.normalize_adjacency)
 
     dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
                data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict]
-
 
     return dataset, num_cats, feat_dim
 
@@ -119,9 +121,10 @@ def load_data(args, dataset_name):
 def create_model(args, model_name, feat_dim, num_cats, output_dim):
     logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, num_cats))
     if model_name == 'gcn':
-        model = GCNNodeCLF(nfeat = feat_dim, nhid = args.hidden_size, nclass = num_cats, nlayer = args.n_layers, dropout = args.dropout)
+        model = GCNNodeCLF(nfeat=feat_dim, nhid=args.hidden_size, nclass=num_cats, nlayer=args.n_layers,
+                           dropout=args.dropout)
     else:
-        #MORE MODELS
+        # MORE MODELS
         raise Exception("such model does not exist !")
     trainer = FedNodeClfTrainer(model)
     logging.info("Model and Trainer  - done")
@@ -157,14 +160,14 @@ def post_complete_message_to_sweep_process(args):
 
 
 if __name__ == "__main__":
-#     # initialize distributed computing (MPI)
+    #     # initialize distributed computing (MPI)
     comm, process_id, worker_number = FedML_init()
 
-#     # parse python script input parameters
+    #     # parse python script input parameters
     parser = argparse.ArgumentParser()
     args = add_args(parser)
 
-#     # customize the process name
+    #     # customize the process name
     str_process_name = "FedGraphNN:" + str(process_id)
     setproctitle.setproctitle(str_process_name)
 
@@ -212,8 +215,8 @@ if __name__ == "__main__":
     dataset, num_cats, feat_dim = load_data(args, args.dataset)
     [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
      data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict] = dataset
-    
-    logging.info("Dataset Processed" )
+
+    logging.info("Dataset Processed")
 
     # create model.
     # Note if the model is DNN (e.g., ResNet), the training will be very slow.
@@ -223,9 +226,9 @@ if __name__ == "__main__":
     # start "federated averaging (FedAvg)"
     fl_alg = get_fl_algorithm_initializer(args.fl_algorithm)
     fl_alg(process_id, worker_number, device, comm,
-                             model, train_data_num, train_data_global, test_data_global,
-                             data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
-                             trainer)
+           model, train_data_num, train_data_global, test_data_global,
+           data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
+           trainer)
 
     if process_id == 0:
         post_complete_message_to_sweep_process(args)

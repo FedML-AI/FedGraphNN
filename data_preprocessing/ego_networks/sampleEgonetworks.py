@@ -76,10 +76,10 @@ def get_data(path, data,  ego_number, hop_number):
     if data not in ["CS", "Physics", "cora", "citeseer","DBLP", "PubMed" ]:
         raise Exception("no such dataset!")
     elif data in ["CS", "Physics"]:
-        pyg_dataset = Coauthor(os.path.join(path, "Coauthor"), data)
+        pyg_dataset = Coauthor(path, data)
         subgraphs, num_graphs, num_features, num_labels = _get_egonetworks(pyg_dataset[0], ego_number, hop_number)
     else:
-        pyg_dataset = CitationFull(os.path.join(path, "CitationFull"), data)
+        pyg_dataset = CitationFull(path, data)
         subgraphs, num_graphs, num_features, num_labels = _get_egonetworks(pyg_dataset[0], ego_number, hop_number)
         
     # if type_network == 'social':
@@ -120,9 +120,9 @@ if __name__ == '__main__':
     if args.data not in ["CS", "Physics", "cora", "citeseer","DBLP", "PubMed" ]:
         raise Exception("no such dataset!")
     elif args.data in ["CS", "Physics"]:
-        outfile = os.path.join(args.path, "Coauthor", args.data, 'egonetworks.pkl')
+        outfile = os.path.join(args.path, args.data, 'egonetworks.pkl')
     else:
-        outfile = os.path.join(args.path, "CitationFull", args.data, 'egonetworks.pkl')
+        outfile = os.path.join(args.path, args.data, 'egonetworks.pkl')
     # if args.type_network == 'social':
     #     outfile = os.path.join(args.path, "TUDataset", args.data, 'egonetworks.pkl')
     pickle.dump([subgraphs, num_graphs, num_features, num_labels], open(outfile, 'wb'))
