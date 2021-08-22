@@ -5,6 +5,8 @@
 
 For each dataset, ego-networks needs to be sampled first.  
 ```
+WORKSPACE=/home/$USER/FedGraphNN
+cd $WORKSPACE/data_preprocessing/ego_networks
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --type_network citation --ego_number 1000 --hop_number 2
 ```
 #### Arguments for Data Preparation code
