@@ -26,7 +26,7 @@ def get_data(path, data):
 
 def create_random_split(path, data):
 
-    subgraphs, num_graphs, num_features, num_labels = get_data(path, data, type_network, ego_number, hop_number)
+    subgraphs, _,_,_ = get_data(path, data)
 
     # inductive: train & test data are from different subgraphs
     random.shuffle(subgraphs)
@@ -75,7 +75,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True):
 
 
 def partition_data_by_sample_size(args, path, client_number, uniform=True, compact=True):
-    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset, args.type_network, args.ego_number, args.hop_number)
+    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset)
 
     num_train_samples = len(graphs_train)
     num_val_samples = len(graphs_val)

@@ -31,13 +31,13 @@ def add_args(parser):
     parser.add_argument('--dataset', type=str, default='CS', metavar='N',
                         help='dataset used for training')
 
-    parser.add_argument('--data_dir', type=str, default='./../../../data/ego-networks/',
+    parser.add_argument('--data_dir', type=str, default='./../../../data/ego-networks/CitationFull',
                         help='data directory')
 
-    parser.add_argument('--ego_number', type=int, default=10,
+    parser.add_argument('--ego_number', type=int, default=1000,
                         help='Sampled ego nodes')
                 
-    parser.add_argument('--hop_number', type=int, default=2,
+    parser.add_argument('--hop_number', type=int, default=5,
                         help='Number of hops')
 
     parser.add_argument('--normalize_features', type=bool, default=False, help='Whether or not to symmetrically normalize feat matrices')
@@ -82,25 +82,25 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    if args.dataset not in ["CS", "Physics", "Cora", "Cora_ML", "CiteSeer","DBLP", "PubMed" ]:
+    num_cats, feat_dim = 0 , 0
+    if args.dataset not in ["CS", "Physics", "cora", "citeseer","DBLP", "PubMed" ]:
         raise Exception("no such dataset!")
     elif args.dataset in ["CS", "Physics"]:
         args.type_network = "coauthor"
     else:
+
         args.type_network = "citation"
 
     compact = (args.model == 'graphsage')
 
     unif = True if args.partition_method == "homo" else False
 
-    sgs, num_cats = get_data(args.data_dir, args.dataset, args.type_network, args.ego_number, args.hop_number)
-
-    feat_dim = sgs[0].x.shape[1]
-    del sgs
 
     if args.model == 'gcn':
         args.normalize_features = True
         args.normalize_adjacency = True
+
+    _, _,feat_dim, num_cats= get_data(args.data_dir, args.dataset)
 
     train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
@@ -169,18 +169,18 @@ if __name__ == "__main__":
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
-    # logging.basicConfig(level=logging.INFO,
-    #                     format='%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-    #                     datefmt='%Y-%m-%d,%H:%M:%S')
-    # logging.info(args)
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
+                        datefmt='%Y-%m-%d,%H:%M:%S')
+    logging.info(args)
 
     hostname = socket.gethostname()
-    # logging.info("#############process ID = " + str(process_id) +
-    #              ", host name = " + hostname + "########" +
-    #              ", process ID = " + str(os.getpid()) +
-    #              ", process Name = " + str(psutil.Process(os.getpid())))
+    logging.info("#############process ID = " + str(process_id) +
+                 ", host name = " + hostname + "########" +
+                 ", process ID = " + str(os.getpid()) +
+                 ", process Name = " + str(psutil.Process(os.getpid())))
 
-    # logging.info("process_id = %d, size = %d" % (process_id, worker_number))
+    logging.info("process_id = %d, size = %d" % (process_id, worker_number))
 
     # initialize the wandb machine learning experimental tracking platform (https://www.wandb.com/).
     if process_id == 0:
@@ -205,7 +205,7 @@ if __name__ == "__main__":
     # machine 3: worker2, worker6;
     # machine 4: worker3, worker7;
     # Therefore, we can see that workers are assigned according to the order of machine list.
-    #logging.info("process_id = %d, size = %d" % (process_id, worker_number))
+    logging.info("process_id = %d, size = %d" % (process_id, worker_number))
     device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
 
     # load data
