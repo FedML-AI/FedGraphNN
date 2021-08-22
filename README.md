@@ -11,7 +11,7 @@ After `git clone`-ing this repository, please run the following command to insta
 ```bash
 conda create -n fedgraphnn python=3.8.3
 conda activate fedgraphnn
-sh install.sh
+bash install.sh
 ```
 
 ## Data Preparation
