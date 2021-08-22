@@ -47,12 +47,15 @@ def create_random_split(path, data):
 def create_non_uniform_split(args, idxs, client_number, is_train=True):
     logging.info("create_non_uniform_split------------------------------------------")
     N = len(idxs)
+    min_size = 0
+    idx_batch_per_client = [[] for _ in range(client_number)]
     alpha = args.partition_alpha
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
-    idx_batch_per_client = [[] for _ in range(client_number)]
-    idx_batch_per_client, min_size = partition_class_samples_with_dirichlet_distribution(N, alpha, client_number,
-                                                                                         idx_batch_per_client, idxs)
+    while min_size < 10:
+        idx_batch_per_client = [[] for _ in range(client_number)]
+        idx_batch_per_client, min_size = partition_class_samples_with_dirichlet_distribution(N, alpha, client_number,
+                                                                                            idx_batch_per_client, idxs)
     logging.info(idx_batch_per_client)
     sample_num_distribution = []
 
