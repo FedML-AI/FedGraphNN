@@ -7,13 +7,14 @@ import psutil
 import setproctitle
 import torch.nn
 import wandb
+from torch_geometric.nn import GAE
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
 from data_preprocessing.subgraph_level.data_loader import *
-from model.ego_networks.gcn_link import GCNLinkPred
+from model.subgraph_level.rgcn import RGCNEncoder,DistMultDecoder
 
-from training.subgraph_level.fed_subgraph_lp_trainer import FedSubgraphLPTrainer
+from training.subgraph_level.fed_subgraph_rel_trainer import FedSubgraphRelTrainer
 
 from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 
@@ -91,8 +92,6 @@ def load_data(args, dataset_name):
 
     args.metric = "AP"
 
-    g1, _ , _  = get_data_community(args.data_dir, args.dataset, args.pred_task)
-    print(g1[0])
     unif = True if args.partition_method == "homo" else False
 
     if args.model == 'gcn':
@@ -114,11 +113,12 @@ def load_data(args, dataset_name):
 
 def create_model(args, model_name):
     logging.info("create_model. model_name = %s" % (model_name))
-    if model_name == 'gcn':
-        model = GCNLinkPred(64,64)
+    if model_name == 'rgcn':
+        model = GAE(RGCNEncoder(34662, hidden_channels=500,num_relations=11),
+                DistMultDecoder(11// 2, hidden_channels=500),)
     else:
         raise Exception("such model does not exist !")
-    trainer = FedSubgraphLPTrainer(model)
+    trainer = FedSubgraphRelTrainer(model)
     logging.info("Model and Trainer  - done")
     return model, trainer
 

@@ -22,7 +22,7 @@ echo $PROCESS_NUM
 
 hostname > mpi_host_file
 
-mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 fed_subgraph_link_pred.py \
+mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 fed_subgraph_rel_pred.py \
   --gpu_server_num $SERVER_NUM \
   --gpu_num_per_server $GPU_NUM_PER_SERVER \
   --model $MODEL \

@@ -77,7 +77,7 @@ def add_args(parser):
     parser.add_argument('--gpu_server_num', type=int, default=1,
                         help='gpu_server_num')
 
-    parser.add_argument('--gpu_num_per_server', type=int, default=4,
+    parser.add_argument('--gpu_num_per_server', type=int, default=8,
                         help='gpu_num_per_server')
 
     parser = add_federated_args(parser)
@@ -150,7 +150,7 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
 
 def post_complete_message_to_sweep_process(args):
     logging.info("post_complete_message_to_sweep_process")
-    pipe_path = "./moleculenet_cls"
+    pipe_path = "./sweep/fedgraphnn-node-level"
     if not os.path.exists(pipe_path):
         os.mkfifo(pipe_path)
     pipe_fd = os.open(pipe_path, os.O_WRONLY)
@@ -210,6 +210,7 @@ if __name__ == "__main__":
     # Therefore, we can see that workers are assigned according to the order of machine list.
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
     device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
+    logging.info("device = {}".format(device))
 
     # load data
     dataset, num_cats, feat_dim = load_data(args, args.dataset)
@@ -232,3 +233,4 @@ if __name__ == "__main__":
 
     if process_id == 0:
         post_complete_message_to_sweep_process(args)
+
