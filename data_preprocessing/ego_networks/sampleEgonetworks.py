@@ -100,7 +100,7 @@ if __name__ == '__main__':
                         type=str, default='./data')
     parser.add_argument('--data', help='the name of dataset',
                         type=str)
-    parser.add_argument('--type_network', help='the type of dataset: ["citation", "coauthor", "social"]',
+    parser.add_argument('--type_network', help='the type of dataset: ["citation", "coauthor"]',
                         type=str)
     parser.add_argument('--ego_number', help='the number of egos sampled',
                         type=int, default=1000)

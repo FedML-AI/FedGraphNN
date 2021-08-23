@@ -1,4 +1,5 @@
 import os
+import argparse
 import random
 import networkx as nx
 import copy
@@ -30,9 +31,11 @@ def _build_pygGraph(relType, df, mapping_entities, mapping_relations):
 
     g = nx.Graph()
     g.add_edges_from(zip(df[0], df[2]), edge_label=mapping_relations[relType])
+
+    gObj = from_networkx(g)
+    gObj.number_of_nodes = g.number_of_nodes()
     
-    # return g
-    return from_networkx(g)
+    return gObj
 
 
 def _build_graphs_by_relType(path, data, filename, mapping_entities, mapping_relations):
@@ -60,15 +63,6 @@ def get_data_community_byRelType(path, data):
 
     # number of graphs == number of relation type
 
-    outpath = os.path.join(path, data, 'subgraphs_byRelType')
-    Path(outpath).mkdir(parents=True, exist_ok=True)
-    pickle.dump(graphs_train, open(os.path.join(outpath, 'train.pkl'), 'wb'))
-    print(f"Wrote to {os.path.join(outpath, 'train.pkl')}.")
-    pickle.dump(graphs_val, open(os.path.join(outpath, 'valid.pkl'), 'wb'))
-    print(f"Wrote to {os.path.join(outpath, 'valid.pkl')}.")
-    pickle.dump(graphs_test, open(os.path.join(outpath, 'test.pkl'), 'wb'))
-    print(f"Wrote to {os.path.join(outpath, 'test.pkl')}.")
-
     return graphs_train, graphs_val, graphs_test
 
 
@@ -83,7 +77,9 @@ def _subgraphing(g, partion):
     for nodes in nodelist:
         if len(nodes) < 2:
             continue
-        graphs.append(from_networkx(nx.subgraph(g, nodes)))
+        gObj = from_networkx(nx.subgraph(g, nodes))
+        gObj.number_of_nodes = len(nodes)
+        graphs.append(gObj)
     return graphs
 
 
@@ -105,7 +101,7 @@ def _build_nxGraph(path, data, filename, mapping_entities, mapping_relations):
     return G
 
 
-def get_data_community(path, data, algo):
+def get_data_community(path, data, algo='Louvain'):
     """ For relation type prediction. """
 
     mapping_entities = _read_mapping(path, data, 'entities.dict')
@@ -117,6 +113,7 @@ def get_data_community(path, data, algo):
 
     assert algo in ['Louvain', 'girvan_newman', 'Clauset-Newman-Moore', 'asyn_lpa_communities', 'label_propagation_communities']
 
+    start = time.time()
     if algo == 'Louvain':
         partion = community_louvain.best_partition(g_train)
         graphs_train = _subgraphing(g_train, partion)
@@ -124,6 +121,9 @@ def get_data_community(path, data, algo):
         graphs_val = _subgraphing(g_val, partion)
         partion = community_louvain.best_partition(g_test)
         graphs_test = _subgraphing(g_test, partion)
+    else:
+        raise NotImplementedError
+    print(f"Partitioned by {algo}:", time.time() - start)
 
     # algorithms:
     # Louvain
@@ -132,7 +132,34 @@ def get_data_community(path, data, algo):
     # asyn_lpa_communities
     # label_propagation_communities
 
-    outpath = os.path.join(path, data, 'subgraphs_byLouvain')
+    return graphs_train, graphs_val, graphs_test
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--path', help='the path for loading dataset',
+                        type=str, default='./data')
+    parser.add_argument('--data', help='the name of dataset',
+                        type=str)
+    parser.add_argument('--pred_task', help='the prediction task: ["relType_prediction", "link_prediction"]',
+                        type=str)
+    parser.add_argument('--algo', help="the community detect method",
+                        type=str, default='Louvain')
+
+    try:
+        args = parser.parse_args()
+    except IOError as msg:
+        parser.error(str(msg))
+
+
+    if args.pred_task == 'relType_prediction':
+        graphs_train, graphs_val, graphs_test = get_data_community(args.path, args.data, args.algo)
+        outpath = os.path.join(path, data, 'subgraphs_byLouvain')
+
+    if args.pred_task == 'link_prediction':
+        graphs_train, graphs_val, graphs_test = get_data_community_byRelType(args.path, args.data)
+        outpath = os.path.join(path, data, 'subgraphs_byRelType')
+
     Path(outpath).mkdir(parents=True, exist_ok=True)
     pickle.dump(graphs_train, open(os.path.join(outpath, 'train.pkl'), 'wb'))
     print(f"Wrote to {os.path.join(outpath, 'train.pkl')}.")
@@ -141,4 +168,3 @@ def get_data_community(path, data, algo):
     pickle.dump(graphs_test, open(os.path.join(outpath, 'test.pkl'), 'wb'))
     print(f"Wrote to {os.path.join(outpath, 'test.pkl')}.")
 
-    return graphs_train, graphs_val, graphs_test

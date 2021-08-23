@@ -12,12 +12,11 @@ import torch
 from torch_geometric.datasets import CitationFull
 from torch_geometric.data import DataLoader
 
-
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 
-def get_data_community(path, data, pred_task):
-    if pred_task == 'relType_prediction' && algo == 'Louvain':
+def get_data_community(path, data, pred_task, algo):
+    if pred_task == 'relType_prediction' and algo == 'Louvain':
     # for relation type prediction
         subdir = 'subgraphs_byLouvain'
 
@@ -36,7 +35,7 @@ def get_data_community(path, data, pred_task):
 def create_random_split(path, data, pred_task='link_prediction', algo='Louvain'):
     assert pred_task in ['relType_prediction', 'link_prediction']
 
-    graphs_train, graphs_val, graphs_test = get_data_community(path, data, pred_task)
+    graphs_train, graphs_val, graphs_test = get_data_community(path, data, pred_task, algo)
 
     return graphs_train, graphs_val, graphs_test
 
@@ -220,4 +219,3 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
 
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
-
