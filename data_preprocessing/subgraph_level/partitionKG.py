@@ -141,7 +141,7 @@ if __name__ == '__main__':
                         type=str, default='./data')
     parser.add_argument('--data', help='the name of dataset',
                         type=str)
-    parser.add_argument('--pred_task', help='the prediction task: ["relType_prediction", "link_prediction"]',
+    parser.add_argument('--pred_task', help='the prediction task: ["relation", "link"]',
                         type=str)
     parser.add_argument('--algo', help="the community detect method",
                         type=str, default='Louvain')
@@ -152,11 +152,11 @@ if __name__ == '__main__':
         parser.error(str(msg))
 
 
-    if args.pred_task == 'relType_prediction':
+    if args.pred_task == 'relation':
         graphs_train, graphs_val, graphs_test = get_data_community(args.path, args.data, args.algo)
         outpath = os.path.join(path, data, 'subgraphs_byLouvain')
 
-    if args.pred_task == 'link_prediction':
+    if args.pred_task == 'link':
         graphs_train, graphs_val, graphs_test = get_data_community_byRelType(args.path, args.data)
         outpath = os.path.join(path, data, 'subgraphs_byRelType')
 
