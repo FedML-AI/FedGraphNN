@@ -53,7 +53,7 @@ class FedNodeClfTrainer(ModelTrainer):
 
         with torch.no_grad():
             for batch_index, batch in enumerate(test_data):
-                logging.info("batch_index = {}. start...".format(batch_index))
+                logging.info("batch_index = {}. batch = {}.".format(batch_index, batch))
                 batch.to(device)
 
                 pred = model(batch)
@@ -62,13 +62,20 @@ class FedNodeClfTrainer(ModelTrainer):
                                              labels=np.arange(0, self.model.nclass))
                 conf_mat += cm_result
 
+        logging.info("conf_mat = {}".format(conf_mat))
+
         # Compute Micro F1
         TP = np.trace(conf_mat)
         FP = np.sum(conf_mat) - TP
         FN = FP
         micro_pr = TP / (TP + FP)
         micro_rec = TP / (TP + FN)
-        micro_F1 = 2 * micro_pr * micro_rec / (micro_pr + micro_rec)
+        logging.info("micro_pr = {}, micro_rec = {}".format(micro_pr, micro_rec))
+        if micro_pr + micro_rec == 0.0:
+            denominator = micro_pr + micro_rec + np.finfo(float).eps
+        else:
+            denominator = micro_pr + micro_rec
+        micro_F1 = 2 * micro_pr * micro_rec / denominator
         logging.info("batch_index = {}. score = {}".format(batch_index, micro_F1))
         return micro_F1, model
 
