@@ -5,10 +5,11 @@ import copy
 import logging
 import pickle
 import pandas as pd
+from torch_geometric.utils import to_networkx, degree
 
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+import torch.nn.functional as F
 import torch
 from torch_geometric.datasets import CitationFull
 from torch_geometric.data import Data, DataLoader
@@ -18,26 +19,51 @@ from torch_geometric.utils import train_test_split_edges
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 
-def _subgraphing(g, partion):
-    nodelist = [None] * len(set(partion.values()))
+def _convert_to_nodeDegreeFeatures(graphs):
+    graph_infos = []
+    maxdegree = 0
+    for i, graph in enumerate(graphs):
+        g = to_networkx(graph, to_undirected=True)
+        gdegree = max(dict(g.degree).values())
+        if gdegree > maxdegree:
+            maxdegree = gdegree
+        graph_infos.append((graph, g.degree, graph.num_nodes))    # (graph, node_degrees, num_nodes)
+
+    new_graphs = []
+    for i, tpl in enumerate(graph_infos):
+        idx, x = tpl[0].edge_index[0], tpl[0].x
+        deg = degree(idx, tpl[2], dtype=torch.long)
+        deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
+
+        new_graph = tpl[0].clone()
+        new_graph.__setitem__('x', deg)
+        new_graphs.append(new_graph)
+
+    return new_graphs
+
+def _subgraphing(g, partion, mapping_item2category):
+    nodelist = [[] for i in set(mapping_item2category.keys())]
     for k, v in partion.items():
-        if nodelist[v] is None:
-            nodelist[v] = []
-        nodelist[v].append(k)
+        for category in v:
+            nodelist[category].append(k)
 
     graphs = []
     for nodes in nodelist:
         if len(nodes) < 2:
             continue
-        graphs.append(from_networkx(nx.subgraph(g, nodes)))
+        graph = nx.subgraph(g, nodes)
+        Gcc = sorted(nx.connected_components(graph), key=len, reverse=True)
+        G0 = graph.subgraph(Gcc[0])
+        graphs.append(from_networkx(G0))
     return graphs
 
 
 def _read_mapping(path, data, filename):
+    mapping = {}
     with open(os.path.join(path, data, filename)) as f:
         for line in f:
             s = line.strip().split()
-            mapping[s[1]] = int(s[0])
+            mapping[int(s[0])] = int(s[1])
     
     return mapping
 
@@ -47,11 +73,12 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
     with open(os.path.join(path, data, filename)) as f:
         for line in f:
             s = line.strip().split()
+            s = [int(i) for i in s]
             G.add_edge(mapping_user[s[0]], mapping_item[s[1]], edge_label=s[2])
     return G
 
 
-def get_data_community(path, data, algo):
+def get_data_category(path, data, algo):
     """ For relation prediction. """
 
     mapping_user = _read_mapping(path, data, 'user.dict')
@@ -61,7 +88,8 @@ def get_data_community(path, data, algo):
     graph = _build_nxGraph(path, data, 'graph.txt', mapping_user, mapping_item)
 
     partion = partition_by_category(graph, mapping_item2category)
-    graphs = _subgraphing(g_train, partion)
+    graphs = _subgraphing(graph, partion, mapping_item2category)
+    graphs = _convert_to_nodeDegreeFeatures(graphs)
     graphs_split = []
     for g in graphs:
         graphs_split.append(train_test_split_edges(g, val_ratio = 0.1, test_ratio = 0.1))
@@ -72,17 +100,17 @@ def get_data_community(path, data, algo):
 def partition_by_category(graph, mapping_item2category):
     partition = {}
     for key in mapping_item2category:
-        partition[key] = mapping_item2category[key]
+        partition[key] = [mapping_item2category[key]]
         for neighbor in graph.neighbors(key):
             if neighbor not in partition:
                 partition[neighbor] = []
             partition[neighbor].append(mapping_item2category[key])
     return partition
 
-def create_random_split(path, data, pred_task='link_prediction', algo='Louvain'):
+def create_category_split(path, data, pred_task='link_prediction', algo='Louvain'):
     assert pred_task in ['link_prediction']
 
-    graphs_train, graphs_val, graphs_test = get_data_community(path, data, algo)
+    graphs_train, graphs_val, graphs_test = get_data_category(path, data, algo)
 
     return graphs_train, graphs_val, graphs_test
 
@@ -117,8 +145,8 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True):
     return idx_batch_per_client
 
 
-def partition_data_by_sample_size(args, path, client_number, uniform=True, compact=True):
-    graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset, args.pred_task, args.part_algo)
+def partition_data_by_category(args, path, client_number, uniform=True, compact=True):
+    graphs_train, graphs_val, graphs_test = create_category_split(path, args.dataset, args.pred_task, args.part_algo)
 
     num_train_samples = len(graphs_train)
     num_val_samples = len(graphs_val)
@@ -181,7 +209,7 @@ def partition_data_by_sample_size(args, path, client_number, uniform=True, compa
 # Single process sequential
 def load_partition_data(args, path, client_number, uniform=True, global_test=True, compact=True, normalize_features=False,
                         normalize_adj=False):
-    global_data_dict, partition_dicts = partition_data_by_sample_size(args, path, client_number, uniform, compact=compact)
+    global_data_dict, partition_dicts = partition_data_by_category(args, path, client_number, uniform, compact=compact)
 
     data_local_num_dict = dict()
     train_data_local_dict = dict()
@@ -222,5 +250,3 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
 
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
-
-
