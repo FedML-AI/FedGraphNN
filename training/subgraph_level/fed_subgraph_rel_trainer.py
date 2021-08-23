@@ -12,7 +12,9 @@ from sklearn.metrics import average_precision_score, roc_auc_score
 
 from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
-class FedSubgraphLPTrainer(ModelTrainer):
+device = 
+
+class FedSubgraphRelTrainer(ModelTrainer):
 
     def get_model_params(self):
         return self.model.cpu().state_dict()
@@ -44,24 +46,25 @@ class FedSubgraphLPTrainer(ModelTrainer):
         max_test_score = 0
         best_model_params = {}
         for epoch in range(args.epochs):
-            ngraphs = 0
-            cum_score = 0
 
             for idx_batch, batch in enumerate(train_data):
+                 optimizer.zero_grad()
+                 z = model.encode(batch.edge_index, batch.edge_label)
 
-                neg_edge_index = negative_sampling(
-                    edge_index=batch.edge_index, num_neg_samples=batch.edge_index.size(1))
-                
-                batch.to(device)
-                optimizer.zero_grad()
+                 pos_out = model.decode(z, batch.edge_index, batch.edge_label)
+
+                 neg_edge_index = self.negative_sampling(batch.edge_index, batch.num_nodes)
+                 neg_out = model.decode(z, neg_edge_index, batch.edge_label)
 
 
-                z = model.encode(batch.x, batch.edge_index); self.train_z = z.item()
-                link_logits = model.decode(z, batch.edge_index, neg_edge_index)
-                link_labels = self.get_link_labels(batch.edge_index, neg_edge_index, device)
-                loss = F.binary_cross_entropy_with_logits(link_logits, link_labels)
-                loss.backward()
-                optimizer.step()
+
+                 out = torch.cat([pos_out, neg_out])
+                 gt = torch.cat([torch.ones_like(pos_out), torch.zeros_like(neg_out)])
+                 cross_entropy_loss = F.binary_cross_entropy_with_logits(out, gt)
+                 reg_loss = z.pow(2).mean() + model.decoder.rel_emb.pow(2).mean()
+                 loss = cross_entropy_loss + 1e-2 * reg_loss
+                 loss.backward()
+                 optimizer.step()
 
             # if val_data:
             #     acc_v, _ = self.test(val_data, device)
@@ -132,8 +135,12 @@ class FedSubgraphLPTrainer(ModelTrainer):
         if models_differ == 0:
             logging.info('Models match perfectly! :)')
 
-    def get_link_labels(pos_edge_index, neg_edge_index, device):
-        num_links = pos_edge_index.size(1) + neg_edge_index.size(1)
-        link_labels = torch.zeros(num_links, dtype=torch.float, device=device)
-        link_labels[:pos_edge_index.size(1)] = 1.
-        return link_labels
+    def negative_sampling(edge_index, num_nodes):
+        # Sample edges by corrupting either the subject or the object of each edge.
+        mask_1 = torch.rand(edge_index.size(1)) < 0.5
+        mask_2 = ~mask_1
+
+        neg_edge_index = edge_index.clone()
+        neg_edge_index[0, mask_1] = torch.randint(num_nodes, (mask_1.sum(), ) , device = device)
+        neg_edge_index[1, mask_2] = torch.randint(num_nodes, (mask_2.sum(), ), device = device)
+        return neg_edge_index
