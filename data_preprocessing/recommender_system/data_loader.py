@@ -172,7 +172,7 @@ def partition_data_by_category(args, path, compact=True):
     labels_of_all_clients = []
     for client in range(client_number):
 
-        partition_dict = {'graph': graphs_split[client_number]}
+        partition_dict = {'graph': graphs_split[client]}
         partition_dicts[client] = partition_dict
 
     global_data_dict = {
@@ -185,16 +185,19 @@ def partition_data_by_category(args, path, compact=True):
 # Single process sequential
 def load_partition_data(args, path, client_number, uniform=True, global_test=True, compact=True, normalize_features=False,
                         normalize_adj=False):
-    global_data_dict, partition_dicts = partition_data_by_category(args, path, client_number, uniform, compact=compact)
+    global_data_dict, partition_dicts = partition_data_by_category(args, path, compact=compact)
+    feature_dim = global_data_dict['graphs'][0].x.shape[1]
+    client_number = len(partition_dict)
+    args.client_num_in_total = client_number
 
-    data_local_num_dict = dict()
-    train_data_local_dict = dict()
+    data_local_num_dict = {}
+    train_data_local_dict = {}
 
-    collator = WalkForestCollator(normalize_features=normalize_features) if compact \
-        else DefaultCollator(normalize_features=normalize_features, normalize_adj=normalize_adj)
+    # collator = WalkForestCollator(normalize_features=normalize_features) if compact \
+    #     else DefaultCollator(normalize_features=normalize_features, normalize_adj=normalize_adj)
 
     # This is a PyG Dataloader
-    train_data_global = DataLoader(global_data_dict['graphs'], batch_size=1, shuffle=True, collate_fn=collator,
+    train_data_global = DataLoader(global_data_dict['graphs'], batch_size=1, shuffle=True,
                                         pin_memory=True)
 
     train_data_num = len(global_data_dict['graphs'])
@@ -202,11 +205,11 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
     for client in range(client_number):
         train_dataset_client = partition_dicts[client]['graph']
 
-        data_local_num_dict[client] = len(train_dataset_client)
+        data_local_num_dict[client] = 1
         train_data_local_dict[client] = DataLoader(train_dataset_client, batch_size=1, shuffle=True,
-                                                        collate_fn=collator, pin_memory=True)
+                                                        pin_memory=True)
         logging.info("Client idx = {}, local sample number = {}".format(client, len(train_dataset_client)))
 
     val_data_num = test_data_num = val_data_global = test_data_global = val_data_local_dict = test_data_local_dict = 0
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
-           data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
+           data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim

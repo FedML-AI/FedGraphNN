@@ -91,8 +91,8 @@ def load_data(args, dataset_name):
 
     args.metric = "MAE"
 
-    g1, _ , _  = get_data_community(args.data_dir, args.dataset, args.pred_task)
-    print(g1[0])
+    # g1, _ , _  = get_data_community(args.data_dir, args.dataset, args.pred_task)
+    # print(g1[0])
     unif = True if args.partition_method == "homo" else False
 
     if args.model == 'gcn':
@@ -100,22 +100,22 @@ def load_data(args, dataset_name):
         args.normalize_adjacency = True
 
     train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
-    data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
+    data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim = load_partition_data(
         args,
         args.data_dir,
         args.client_num_in_total,
         uniform=unif, compact=compact, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
 
     dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
-               data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict]
+               data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim]
 
     return dataset
 
 
-def create_model(args, model_name):
+def create_model(args, model_name, feature_dim):
     logging.info("create_model. model_name = %s" % (model_name))
     if model_name == 'gcn':
-        model = GCNLinkPred(64,64)
+        model = GCNLinkPred(feature_dim,64)
     else:
         raise Exception("such model does not exist !")
     trainer = FedSubgraphLPTrainer(model)
@@ -206,7 +206,7 @@ if __name__ == "__main__":
     # load data
     dataset = load_data(args, args.dataset)
     [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
-     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict] = dataset
+     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim] = dataset
     
    
     logging.info("Dataset Processed" )
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     # # create model.
     # # Note if the model is DNN (e.g., ResNet), the training will be very slow.
     # # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
-    model, trainer = create_model(args, args.model)
+    model, trainer = create_model(args, args.model, feature_dim)
 
     # # start "federated averaging (FedAvg)"
     fl_alg = get_fl_algorithm_initializer(args.fl_algorithm)
