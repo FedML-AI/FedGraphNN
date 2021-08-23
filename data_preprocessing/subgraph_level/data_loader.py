@@ -8,19 +8,19 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-import torch
-from torch_geometric.datasets import CitationFull
 from torch_geometric.data import DataLoader
+from ..utils import DefaultCollator, WalkForestCollator
+
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
 
-def get_data_community(path, data, pred_task, algo):
-    if pred_task == 'relType_prediction' and algo == 'Louvain':
+def get_data_community(path, data, pred_task):
+    if pred_task == 'relation':
     # for relation type prediction
         subdir = 'subgraphs_byLouvain'
 
-    if pred_task == 'link_prediction':
+    if pred_task == 'link':
     # for link prediction with communities grouped by the relation type
         subdir = 'subgraphs_byRelType'
 
@@ -32,10 +32,10 @@ def get_data_community(path, data, pred_task, algo):
     return graphs_train, graphs_val, graphs_test
 
 
-def create_random_split(path, data, pred_task='link_prediction', algo='Louvain'):
-    assert pred_task in ['relType_prediction', 'link_prediction']
+def create_random_split(path, data, pred_task='link', algo='Louvain'):
+    assert pred_task in ['relation', 'link']
 
-    graphs_train, graphs_val, graphs_test = get_data_community(path, data, pred_task, algo)
+    graphs_train, graphs_val, graphs_test = get_data_community(path, data, pred_task)
 
     return graphs_train, graphs_val, graphs_test
 
@@ -43,12 +43,16 @@ def create_random_split(path, data, pred_task='link_prediction', algo='Louvain')
 def create_non_uniform_split(args, idxs, client_number, is_train=True):
     logging.info("create_non_uniform_split------------------------------------------")
     N = len(idxs)
+    
+    min_size = 0
     alpha = args.partition_alpha
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
-    idx_batch_per_client = [[] for _ in range(client_number)]
-    idx_batch_per_client, min_size = partition_class_samples_with_dirichlet_distribution(N, alpha, client_number,
-                                                                                         idx_batch_per_client, idxs)
+    while min_size < 1:
+        idx_batch_per_client = [[] for _ in range(client_number)]
+        idx_batch_per_client, min_size = partition_class_samples_with_dirichlet_distribution(N, alpha, client_number,
+                                                                                             idx_batch_per_client, idxs)
+        logging.info("searching for min_size < 1")
     logging.info(idx_batch_per_client)
     sample_num_distribution = []
 
@@ -124,7 +128,7 @@ def partition_data_by_sample_size(args, path, client_number, uniform=True, compa
         partition_dicts[client] = partition_dict
 
     # plot the label distribution similarity score
-    visualize_label_distribution_similarity_score(labels_of_all_clients)
+    # visualize_label_distribution_similarity_score(labels_of_all_clients)
 
     global_data_dict = {
         'train': graphs_train,
@@ -219,3 +223,4 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
 
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict
+

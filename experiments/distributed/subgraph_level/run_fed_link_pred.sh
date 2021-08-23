@@ -35,6 +35,6 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 fed_subgraph_link_pred
   --client_num_per_round $WORKER_NUM \
   --comm_round $ROUND \
   --epochs $EPOCH \
-  --n_layers $N_LAYERS \
   --batch_size $BATCH_SIZE \
-  --lr $LR
+  --n_layers $N_LAYERS \
+  --lr $LR \

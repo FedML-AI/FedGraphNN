@@ -7,18 +7,18 @@ import psutil
 import setproctitle
 import torch.nn
 import wandb
+from torch_geometric.nn import GAE
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
-from data_preprocessing.ego_networks.data_loader import *
-from model.ego_networks.gcn import GCNNodeCLF
+from data_preprocessing.subgraph_level.data_loader import *
+from model.subgraph_level.rgcn import RGCNEncoder,DistMultDecoder
 
-from training.ego_networks.federated_nc_trainer import FedNodeClfTrainer
+from training.subgraph_level.fed_subgraph_rel_trainer import FedSubgraphRelTrainer
 
 from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 
 from experiments.distributed.initializer import add_federated_args, get_fl_algorithm_initializer, set_seed
-
 
 def add_args(parser):
     """
@@ -29,26 +29,23 @@ def add_args(parser):
     parser.add_argument('--model', type=str, default='gcn', metavar='N',
                         help='neural network used in training')
 
-    parser.add_argument('--dataset', type=str, default='CS', metavar='N',
+    parser.add_argument('--dataset', type=str, default='Cora', metavar='N',
                         help='dataset used for training')
 
-    parser.add_argument('--data_dir', type=str, default='./../../../data/ego-networks',
+    parser.add_argument('--data_dir', type=str, default='./../../../data/subgraph_level/',
                         help='data directory')
 
-    parser.add_argument('--ego_number', type=int, default=1000,
+    parser.add_argument('--ego_number', type=int, default=10,
                         help='Sampled ego nodes')
-
-    parser.add_argument('--hop_number', type=int, default=5,
+                
+    parser.add_argument('--hop_number', type=int, default=2,
                         help='Number of hops')
 
-    parser.add_argument('--normalize_features', type=bool, default=False,
-                        help='Whether or not to symmetrically normalize feat matrices')
+    parser.add_argument('--normalize_features', type=bool, default=False, help='Whether or not to symmetrically normalize feat matrices')
 
-    parser.add_argument('--normalize_adjacency', type=bool, default=False,
-                        help='Whether or not to symmetrically normalize adj matrices')
+    parser.add_argument('--normalize_adjacency', type=bool, default=False, help='Whether or not to symmetrically normalize adj matrices')
 
-    parser.add_argument('--sparse_adjacency', type=bool, default=False,
-                        help='Whether or not the adj matrix is to be processed as a sparse matrix')
+    parser.add_argument('--sparse_adjacency', type=bool, default=False, help='Whether or not the adj matrix is to be processed as a sparse matrix')
 
     parser.add_argument('--batch_size', type=int, default=64, metavar='N',
                         help='input batch size for training (default: 64)')
@@ -77,7 +74,7 @@ def add_args(parser):
     parser.add_argument('--gpu_server_num', type=int, default=1,
                         help='gpu_server_num')
 
-    parser.add_argument('--gpu_num_per_server', type=int, default=8,
+    parser.add_argument('--gpu_num_per_server', type=int, default=4,
                         help='gpu_num_per_server')
 
     parser = add_federated_args(parser)
@@ -86,15 +83,14 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    num_cats, feat_dim = 0, 0
-    if args.dataset not in ["CS", "Physics", "cora", "citeseer", "DBLP", "PubMed"]:
-        raise Exception("no such dataset!")
-    elif args.dataset in ["CS", "Physics"]:
-        args.type_network = "coauthor"
-    else:
-        args.type_network = "citation"
+    if args.dataset not in ["YAGO3-10", "wn18rr", "FB15k-237" ]:
+        raise Exception("no such dataset!")    
 
+    args.part_algo = 'Louvain'
+    args.pred_task = "relation"
     compact = (args.model == 'graphsage')
+
+    args.metric = "AP"
 
     unif = True if args.partition_method == "homo" else False
 
@@ -102,31 +98,27 @@ def load_data(args, dataset_name):
         args.normalize_features = True
         args.normalize_adjacency = True
 
-    _, _, feat_dim, num_cats = get_data(args.data_dir, args.dataset)
-
     train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
         args,
         args.data_dir,
         args.client_num_in_total,
-        uniform=unif, compact=compact, normalize_features=args.normalize_features,
-        normalize_adj=args.normalize_adjacency)
+        uniform=unif, compact=compact, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
 
     dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
                data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict]
 
-    return dataset, num_cats, feat_dim
+    return dataset
 
 
-def create_model(args, model_name, feat_dim, num_cats, output_dim):
-    logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, num_cats))
-    if model_name == 'gcn':
-        model = GCNNodeCLF(nfeat=feat_dim, nhid=args.hidden_size, nclass=num_cats, nlayer=args.n_layers,
-                           dropout=args.dropout)
+def create_model(args, model_name):
+    logging.info("create_model. model_name = %s" % (model_name))
+    if model_name == 'rgcn':
+        model = GAE(RGCNEncoder(34662, hidden_channels=500,num_relations=11),
+                DistMultDecoder(11// 2, hidden_channels=500),)
     else:
-        # MORE MODELS
         raise Exception("such model does not exist !")
-    trainer = FedNodeClfTrainer(model)
+    trainer = FedSubgraphRelTrainer(model)
     logging.info("Model and Trainer  - done")
     return model, trainer
 
@@ -150,7 +142,7 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
 
 def post_complete_message_to_sweep_process(args):
     logging.info("post_complete_message_to_sweep_process")
-    pipe_path = "./sweep/fedgraphnn-node-level"
+    pipe_path = "./moleculenet_cls"
     if not os.path.exists(pipe_path):
         os.mkfifo(pipe_path)
     pipe_fd = os.open(pipe_path, os.O_WRONLY)
@@ -160,14 +152,14 @@ def post_complete_message_to_sweep_process(args):
 
 
 if __name__ == "__main__":
-    #     # initialize distributed computing (MPI)
+#     # initialize distributed computing (MPI)
     comm, process_id, worker_number = FedML_init()
 
-    #     # parse python script input parameters
+#     # parse python script input parameters
     parser = argparse.ArgumentParser()
     args = add_args(parser)
 
-    #     # customize the process name
+#     # customize the process name
     str_process_name = "FedGraphNN:" + str(process_id)
     setproctitle.setproctitle(str_process_name)
 
@@ -208,29 +200,28 @@ if __name__ == "__main__":
     # machine 3: worker2, worker6;
     # machine 4: worker3, worker7;
     # Therefore, we can see that workers are assigned according to the order of machine list.
-    logging.info("process_id = %d, size = %d" % (process_id, worker_number))
+    #logging.info("process_id = %d, size = %d" % (process_id, worker_number))
     device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
-    logging.info("device = {}".format(device))
 
     # load data
-    dataset, num_cats, feat_dim = load_data(args, args.dataset)
+    dataset = load_data(args, args.dataset)
     [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
      data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict] = dataset
+    
+   
+    logging.info("Dataset Processed" )
 
-    logging.info("Dataset Processed")
+    # # create model.
+    # # Note if the model is DNN (e.g., ResNet), the training will be very slow.
+    # # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
+    model, trainer = create_model(args, args.model)
 
-    # create model.
-    # Note if the model is DNN (e.g., ResNet), the training will be very slow.
-    # In this case, please use our FedML distributed version (./fedml_experiments/distributed_fedavg)
-    model, trainer = create_model(args, args.model, feat_dim, num_cats, output_dim=None)
-
-    # start "federated averaging (FedAvg)"
+    # # start "federated averaging (FedAvg)"
     fl_alg = get_fl_algorithm_initializer(args.fl_algorithm)
     fl_alg(process_id, worker_number, device, comm,
-           model, train_data_num, train_data_global, test_data_global,
-           data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
-           trainer)
+                             model, train_data_num, train_data_global, test_data_global,
+                             data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
+                             trainer)
 
     if process_id == 0:
         post_complete_message_to_sweep_process(args)
-

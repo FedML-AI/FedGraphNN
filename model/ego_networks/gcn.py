@@ -4,10 +4,11 @@ from torch_geometric.nn import GCNConv
 
 
 class GCNNodeCLF(torch.nn.Module):
-    def __init__(self,nfeat, nhid, nclass, nlayer , dropout):
+    def __init__(self, nfeat, nhid, nclass, nlayer , dropout):
         super(GCNNodeCLF, self).__init__()
         self.num_layers = nlayer
         self.dropout = dropout
+        self.nclass= nclass
 
         self.pre = torch.nn.Sequential(torch.nn.Linear(nfeat, nhid))
 
