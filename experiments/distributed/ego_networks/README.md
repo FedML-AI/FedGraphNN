@@ -59,8 +59,11 @@ collaboration networks (# nodes): e.g. CS (18333), Physics (34493)
 WORKSPACE=/home/$USER/FedGraphNN
 cd $WORKSPACE/experiments/distributed/ego_networks
 
+# for citation network (cora, citeseer, pubmed, dblp), we allow each FL client to have heterogenous number of ego networks.
 sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
-sh run_fed_node_clf.sh 10 10 1 1 gcn homo 0.5 20 1 32 0.0015 32 3 0.3 CS
+
+# for co-author dataset (CS, Physics), we view each author as a FL client.
+sh run_fed_node_clf.sh 8 8 1 1 gcn homo 0.5 20 1 32 0.0015 32 3 0.3 CS
 ```
 
 ### Distributed/Federated Link Prediction experiments
@@ -68,25 +71,4 @@ sh run_fed_node_clf.sh 10 10 1 1 gcn homo 0.5 20 1 32 0.0015 32 3 0.3 CS
 WORKSPACE=/home/$USER/FedGraphNN
 cd $WORKSPACE/experiments/distributed/ego_networks
 sh run_fed_link_pred.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
-```
-
-#### Arguments for Distributed/Federated Training
-This is an ordered list of arguments used in distributed/federated experiments. Note, there are additional parameters for this setting.
-```
-CLIENT_NUM -> Number of clients in dist/fed setting
-WORKER_NUM-> Number of workers
-SERVER_NUM -> Number of servers
-GPU_NUM_PER_SERVER -> GPU number per server
-MODEL -> Model name
-DISTRIBUTION -> Dataset distribution. homo for IID splitting. hetero for non-IID splitting.
-PARTITION_ALPHA -> Dataset distribution. homo for IID splitting. hetero for non-IID splitting.
-ROUND -> Number of Distiributed/Federated Learning Rounds
-EPOCH -> Number of epochs to train clients' local models
-BATCH_SIZE -> Batch size 
-LR  -> learning rate
-DIM -> Dimenionality of GraphSAGE embedding
-N_LAYER -> Dimensionality of node embeddings
-SAGE_DR -> Dropout rate applied between GraphSAGE Layers
-DATASET -> Dataset name (Please check data folder to see all available datasets)
-FED_OPT -> Name for federated optimizer to use
 ```

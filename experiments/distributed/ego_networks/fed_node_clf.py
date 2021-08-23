@@ -150,7 +150,7 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
 
 def post_complete_message_to_sweep_process(args):
     logging.info("post_complete_message_to_sweep_process")
-    pipe_path = "./moleculenet_cls"
+    pipe_path = "./sweep/fedgraphnn-node-level"
     if not os.path.exists(pipe_path):
         os.mkfifo(pipe_path)
     pipe_fd = os.open(pipe_path, os.O_WRONLY)
@@ -232,3 +232,4 @@ if __name__ == "__main__":
 
     if process_id == 0:
         post_complete_message_to_sweep_process(args)
+
