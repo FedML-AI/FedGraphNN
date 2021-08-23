@@ -183,7 +183,7 @@ def partition_data_by_category(args, path, compact=True):
 
 
 # Single process sequential
-def load_partition_data(args, path, client_number, uniform=True, global_test=True, compact=True, normalize_features=False,
+def load_partition_data(args, path, client_number, uniform=True, global_test=True, normalize_features=False,
                         normalize_adj=False):
     global_data_dict, partition_dicts = partition_data_by_category(args, path, compact=compact)
     feature_dim = global_data_dict['graphs'][0].x.shape[1]
