@@ -77,7 +77,7 @@ def add_args(parser):
     parser.add_argument('--gpu_server_num', type=int, default=1,
                         help='gpu_server_num')
 
-    parser.add_argument('--gpu_num_per_server', type=int, default=4,
+    parser.add_argument('--gpu_num_per_server', type=int, default=8,
                         help='gpu_num_per_server')
 
     parser = add_federated_args(parser)
@@ -210,6 +210,7 @@ if __name__ == "__main__":
     # Therefore, we can see that workers are assigned according to the order of machine list.
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
     device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
+    logging.info("device = {}".format(device))
 
     # load data
     dataset, num_cats, feat_dim = load_data(args, args.dataset)

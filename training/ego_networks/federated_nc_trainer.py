@@ -62,21 +62,23 @@ class FedNodeClfTrainer(ModelTrainer):
                                              labels=np.arange(0, self.model.nclass))
                 conf_mat += cm_result
 
-        logging.info("conf_mat = {}".format(conf_mat))
+        # logging.info("conf_mat = {}".format(conf_mat))
 
         # Compute Micro F1
         TP = np.trace(conf_mat)
+        # logging.info("TP = {}".format(TP))
         FP = np.sum(conf_mat) - TP
+        # logging.info("FP = {}".format(FP))
         FN = FP
         micro_pr = TP / (TP + FP)
         micro_rec = TP / (TP + FN)
-        logging.info("micro_pr = {}, micro_rec = {}".format(micro_pr, micro_rec))
+        # logging.info("micro_pr = {}, micro_rec = {}".format(micro_pr, micro_rec))
         if micro_pr + micro_rec == 0.0:
             denominator = micro_pr + micro_rec + np.finfo(float).eps
         else:
             denominator = micro_pr + micro_rec
         micro_F1 = 2 * micro_pr * micro_rec / denominator
-        logging.info("batch_index = {}. score = {}".format(batch_index, micro_F1))
+        logging.info("score = {}".format(micro_F1))
         return micro_F1, model
 
     def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
