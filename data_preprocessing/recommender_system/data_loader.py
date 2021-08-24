@@ -187,7 +187,7 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
                         normalize_adj=False):
     global_data_dict, partition_dicts = partition_data_by_category(args, path)
     feature_dim = global_data_dict['graphs'][0].x.shape[1]
-    client_number = len(partition_dict)
+    client_number = len(partition_dicts)
     args.client_num_in_total = client_number
 
     data_local_num_dict = {}
