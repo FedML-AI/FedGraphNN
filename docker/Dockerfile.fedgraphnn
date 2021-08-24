@@ -36,7 +36,7 @@ RUN add-apt-repository ppa:git-core/ppa -y && \
 ##############################################################################
 ENV OPENMPI_BASEVERSION=4.0
 ENV OPENMPI_VERSION=${OPENMPI_BASEVERSION}.1
-RUN cd ${STAGE_DIR} && \
+RUN cd ${INSTALL_DIR} && \
     wget -q -O - https://download.open-mpi.org/release/open-mpi/v${OPENMPI_BASEVERSION}/openmpi-${OPENMPI_VERSION}.tar.gz | tar xzf - && \
     cd openmpi-${OPENMPI_VERSION} && \
     ./configure --prefix=/usr/local/openmpi-${OPENMPI_VERSION} && \
@@ -44,8 +44,8 @@ RUN cd ${STAGE_DIR} && \
     ln -s /usr/local/openmpi-${OPENMPI_VERSION} /usr/local/mpi && \
     # Sanity check:
     test -f /usr/local/mpi/bin/mpic++ && \
-    cd ${STAGE_DIR} && \
-    rm -r ${STAGE_DIR}/openmpi-${OPENMPI_VERSION}
+    cd ${INSTALL_DIR} && \
+    rm -r ${INSTALL_DIR}/openmpi-${OPENMPI_VERSION}
 ENV PATH=/usr/local/mpi/bin:${PATH} \
     LD_LIBRARY_PATH=/usr/local/lib:/usr/local/mpi/lib:/usr/local/mpi/lib64:${LD_LIBRARY_PATH}
 # Create a wrapper for OpenMPI to allow running as root by default
@@ -116,11 +116,12 @@ RUN pip3 install mpi4py \
     Celery==4.4.7 \
     dill==0.3.3
 
+
 ##############################################################################
 # PyTorch (latest version: 2021.08.21)
 ##############################################################################
 RUN sudo pip3 install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions future six requests dataclasses h5py
-RUN cd ${STAGE_DIR} && git clone https://github.com/pytorch/pytorch.git && cd pytorch && git submodule sync && git submodule update --init --recursive && sudo USE_SYSTEM_NCCL=1 TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0" python3 setup.py install
+RUN cd ${INSTALL_DIR} && git clone https://github.com/pytorch/pytorch.git && cd pytorch && git submodule sync && git submodule update --init --recursive && sudo USE_SYSTEM_NCCL=1 TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0" python3 setup.py install
 
 ##############################################################################
 # install torch-geometric (https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
