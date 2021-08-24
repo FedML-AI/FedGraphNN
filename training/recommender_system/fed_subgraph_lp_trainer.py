@@ -72,7 +72,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
             if train_data is not None:
                 test_score, _ = self.test(train_data, device, val = True, metric = self.metric_fn)
                 print('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
-                if test_score > max_test_score:
+                if test_score < max_test_score:
                     max_test_score = test_score
                     best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
                 print('Current best = {}'.format(max_test_score))
@@ -123,7 +123,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
             model_list.append(model)
             score_list.append(score)
             logging.info('Client {}, Test {} = {}'.format(client_idx, args.metric, score))
-            wandb.log({"Client {} Test/{}}".format(client_idx, args.metric): score})
+            wandb.log({"Client {}, Test {} = {}".format(client_idx, args.metric), score))
 
         avg_score = np.mean(np.array(score_list))
         logging.info('Test {} = {}'.format(args.metric, avg_score))
