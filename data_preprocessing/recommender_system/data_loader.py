@@ -23,8 +23,9 @@ def split_graph(graph, train_ratio = 0.8, val_ratio = 0.1, test_ratio = 0.1):
     graph.edge_label = graph.edge_label.float()
     edge_size = graph.edge_label.size()[0]
     train_num = int(edge_size * train_ratio)
-    val_num = int(edge_size * val_ratio)
-    test_num = edge_size - train_num - val_num
+    val_num = max(1, int(edge_size * val_ratio))
+    test_num = max(1, int(edge_size * test_ratio))
+    train_num = edge_size - val_num - test_num
     
     [train_split, val_split, test_split] = torch.utils.data.random_split(range(edge_size), [train_num, val_num, test_num])
     train_split = torch.tensor(train_split)
