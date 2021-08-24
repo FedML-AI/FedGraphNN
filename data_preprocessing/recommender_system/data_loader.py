@@ -206,7 +206,7 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
         train_dataset_client = partition_dicts[client]['graph']
 
         data_local_num_dict[client] = 1
-        train_data_local_dict[client] = DataLoader(train_dataset_client, batch_size=1, shuffle=True,
+        train_data_local_dict[client] = DataLoader([train_dataset_client], batch_size=1, shuffle=True,
                                                         pin_memory=True)
         logging.info("Client idx = {}, local sample number = {}".format(client, len(train_dataset_client)))
 
