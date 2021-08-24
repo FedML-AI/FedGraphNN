@@ -123,7 +123,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
             model_list.append(model)
             score_list.append(score)
             logging.info('Client {}, Test {} = {}'.format(client_idx, args.metric, score))
-            wandb.log({"Client {}, Test {} = {}".format(client_idx, args.metric), score))
+            wandb.log({"Client {} Test/{}".format(client_idx, args.metric): score})
 
         avg_score = np.mean(np.array(score_list))
         logging.info('Test {} = {}'.format(args.metric, avg_score))
