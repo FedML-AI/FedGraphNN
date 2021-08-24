@@ -57,7 +57,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
                 optimizer.zero_grad()
 
                 z = model.encode(batch.x, batch.edge_train)
-                self.train_z = z
+                # self.train_z = z
                 link_logits = model.decode(z, batch.edge_train)
                 link_labels = batch.label_train
                 # link_labels = self.get_link_labels(batch.edge_index, neg_edge_index, device)

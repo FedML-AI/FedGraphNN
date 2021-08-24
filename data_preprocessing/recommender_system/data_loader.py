@@ -20,7 +20,7 @@ from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_
 
 def split_graph(graph, train_ratio = 0.8, val_ratio = 0.1, test_ratio = 0.1):
     assert train_ratio + val_ratio + test_ratio == 1
-    graph.edge_index = graph.edge_index.float()
+    graph.edge_label = graph.edge_label.float()
     edge_size = graph.edge_label.size()[0]
     train_num = int(edge_size * train_ratio)
     val_num = int(edge_size * val_ratio)
