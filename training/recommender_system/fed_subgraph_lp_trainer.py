@@ -71,16 +71,15 @@ class FedSubgraphLPTrainer(ModelTrainer):
             # if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (idx_batch == len(train_data) - 1):
             if train_data is not None:
                 test_score, _ = self.test(train_data, device, val = True, metric = self.metric_fn)
-                print('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
+                logging.info('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
                 if test_score < max_test_score:
                     max_test_score = test_score
                     best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
-                print('Current best = {}'.format(max_test_score))
+                logging.info('Current best = {}'.format(max_test_score))
 
         return max_test_score, best_model_params
 
     def test(self, test_data, device, val = True, metric = mean_absolute_error):
-        logging.info("----------test--------")
         model = self.model
         model.eval()
         model.to(device)
@@ -107,7 +106,6 @@ class FedSubgraphLPTrainer(ModelTrainer):
             # cum_score += self.metric_fn(link_labels.cpu(), link_probs.cpu())
             # ngraphs += batch.num_graphs
         return score, model
-
 
     def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
         logging.info("----------test_on_the_server--------")
@@ -143,7 +141,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         if models_differ == 0:
             logging.info('Models match perfectly! :)')
 
-    def get_link_labels(pos_edge_index, neg_edge_index, device):
+    def get_link_labels(self, pos_edge_index, neg_edge_index, device):
         num_links = pos_edge_index.size(1) + neg_edge_index.size(1)
         link_labels = torch.zeros(num_links, dtype=torch.float, device=device)
         link_labels[:pos_edge_index.size(1)] = 1.
