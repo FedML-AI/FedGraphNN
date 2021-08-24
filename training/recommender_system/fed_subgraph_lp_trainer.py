@@ -70,7 +70,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
 
             # if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (idx_batch == len(train_data) - 1):
             if train_data is not None:
-                test_score, _ = self.test(train_data, device, val = True)
+                test_score, _ = self.test(train_data, device, val = True, metric = self.metric_fn)
                 print('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
                 if test_score > max_test_score:
                     max_test_score = test_score
@@ -79,11 +79,12 @@ class FedSubgraphLPTrainer(ModelTrainer):
 
         return max_test_score, best_model_params
 
-    def test(self, test_data, device, val = True):
+    def test(self, test_data, device, val = True, metric = mean_absolute_error):
         logging.info("----------test--------")
         model = self.model
         model.eval()
         model.to(device)
+        metric = metric
 
         # cum_score = 0.
         # ngraphs = 0
@@ -103,7 +104,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
                     link_labels = batch.label_val
                 else:
                     link_labels = batch.label_test
-                score = self.metric_fn(link_labels.cpu(), link_logits.cpu())
+                score = metric(link_labels.cpu(), link_logits.cpu())
                 logging.info(score)
             # cum_score += self.metric_fn(link_labels.cpu(), link_probs.cpu())
             # ngraphs += batch.num_graphs
