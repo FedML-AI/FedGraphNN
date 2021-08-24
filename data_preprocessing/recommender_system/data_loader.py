@@ -210,6 +210,8 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
                                                         pin_memory=True)
         logging.info("Client idx = {}, local sample number = {}".format(client, len(train_dataset_client)))
 
-    val_data_num = test_data_num = val_data_global = test_data_global = val_data_local_dict = test_data_local_dict = 0
+    val_data_num = test_data_num  = train_data_num
+    val_data_local_dict = test_data_local_dict = train_data_local_dict
+    val_data_global = test_data_global = train_data_global
     return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
            data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim

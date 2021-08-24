@@ -56,7 +56,8 @@ class FedSubgraphLPTrainer(ModelTrainer):
                 batch.to(device)
                 optimizer.zero_grad()
 
-                z = model.encode(batch.x, batch.edge_train); self.train_z = z.item()
+                z = model.encode(batch.x, batch.edge_train)
+                self.train_z = z
                 link_logits = model.decode(z, batch.edge_train)
                 link_labels = batch.label_train
                 # link_labels = self.get_link_labels(batch.edge_index, neg_edge_index, device)
@@ -67,18 +68,18 @@ class FedSubgraphLPTrainer(ModelTrainer):
             # if val_data:
             #     acc_v, _ = self.test(val_data, device)
 
-            if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (idx_batch == len(train_data) - 1):
-                if train_data is not None:
-                    test_score, _ = self.test(train_data, device)
-                    print('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
-                    if test_score > max_test_score:
-                        max_test_score = test_score
-                        best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
-                    print('Current best = {}'.format(max_test_score))
+            # if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (idx_batch == len(train_data) - 1):
+            if train_data is not None:
+                test_score, _ = self.test(train_data, device, val = True)
+                print('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
+                if test_score > max_test_score:
+                    max_test_score = test_score
+                    best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
+                print('Current best = {}'.format(max_test_score))
 
         return max_test_score, best_model_params
 
-    def test(self, test_data, device):
+    def test(self, test_data, device, val = True):
         logging.info("----------test--------")
         model = self.model
         model.eval()
@@ -91,11 +92,19 @@ class FedSubgraphLPTrainer(ModelTrainer):
             with torch.no_grad():
                 # pos_edge_index = batch['test_pos_edge_index']
                 # neg_edge_index = batch['test_neg_edge_index']
-                link_logits = model.decode(self.train_z, batch.edge_val)
+                logging.info("decoding")
+                if val == True:
+                    link_logits = model.decode(self.train_z, batch.edge_val)
+                else:
+                    link_logits = model.decode(self.train_z, batch.edge_test)
                 # link_probs = link_logits.sigmoid()
                 # link_labels = self.get_link_labels(pos_edge_index, neg_edge_index)
-                link_labels = batch.label_val
+                if val == True:
+                    link_labels = batch.label_val
+                else:
+                    link_labels = batch.label_test
                 score = self.metric_fn(link_labels.cpu(), link_logits.cpu())
+                logging.info(score)
             # cum_score += self.metric_fn(link_labels.cpu(), link_probs.cpu())
             # ngraphs += batch.num_graphs
         return score, model
@@ -104,9 +113,9 @@ class FedSubgraphLPTrainer(ModelTrainer):
         logging.info("----------test_on_the_server--------")
 
         model_list, score_list = [], []
-        for client_idx in train_data_local_dict.keys():
-            test_data = train_data_local_dict[client_idx]
-            score, model = self.test(test_data, device)
+        for client_idx in test_data_local_dict.keys():
+            test_data = test_data_local_dict[client_idx]
+            score, model = self.test(test_data, device, val = False)
             for idx in range(len(model_list)):
                 self._compare_models(model, model_list[idx])
             model_list.append(model)
