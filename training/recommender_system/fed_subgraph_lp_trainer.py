@@ -91,9 +91,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         for batch in test_data:
             batch.to(device)
             with torch.no_grad():
-                logging.info("encoding")
                 train_z = model.encode(batch.x, batch.edge_train)
-                logging.info("decoding")
                 if val == True:
                     link_logits = model.decode(train_z, batch.edge_val)
                 else:
@@ -105,7 +103,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
                 else:
                     link_labels = batch.label_test
                 score = metric(link_labels.cpu(), link_logits.cpu())
-                logging.info(score)
+                # logging.info(score)
             # cum_score += self.metric_fn(link_labels.cpu(), link_probs.cpu())
             # ngraphs += batch.num_graphs
         return score, model
