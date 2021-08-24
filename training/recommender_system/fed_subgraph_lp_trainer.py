@@ -57,7 +57,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
                 optimizer.zero_grad()
 
                 z = model.encode(batch.x, batch.edge_train)
-                self.train_z = z
+                # self.train_z = z
                 link_logits = model.decode(z, batch.edge_train)
                 link_labels = batch.label_train
                 # link_labels = self.get_link_labels(batch.edge_index, neg_edge_index, device)
@@ -92,17 +92,18 @@ class FedSubgraphLPTrainer(ModelTrainer):
             with torch.no_grad():
                 # pos_edge_index = batch['test_pos_edge_index']
                 # neg_edge_index = batch['test_neg_edge_index']
+                z = model.encode(batch.x, batch.edge_train)
                 logging.info("decoding")
                 if val == True:
-                    link_logits = model.decode(self.train_z, batch.edge_val)
+                    link_logits = model.decode(z, batch.edge_val)
                 else:
-                    link_logits = model.decode(self.train_z, batch.edge_test)
+                    link_logits = model.decode(z, batch.edge_val)
                 # link_probs = link_logits.sigmoid()
                 # link_labels = self.get_link_labels(pos_edge_index, neg_edge_index)
                 if val == True:
                     link_labels = batch.label_val
                 else:
-                    link_labels = batch.label_test
+                    link_labels = batch.label_val
                 score = self.metric_fn(link_labels.cpu(), link_logits.cpu())
                 logging.info(score)
             # cum_score += self.metric_fn(link_labels.cpu(), link_probs.cpu())
