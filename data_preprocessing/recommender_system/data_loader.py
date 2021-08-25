@@ -133,8 +133,18 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
     nx.set_node_attributes(G, dic, 'index_orig')
     return G
 
+def combine_category(graphs, category_split):
+    combined_graph = []
+    for i in range(len(category_split)):
+        logging.info('combining subgraphs for ' + str(i) + 'client')
+        graph_new = ls[0]
+        for i in range(1, len(ls)):
+            logging.info('combined ' + str(i + 1) + 'subgraphs') 
+            graph_new = combine_subgraphs(graph_new, ls[i])
+        combined_graph.append(graph_new)
+    return combined_graph
 
-def get_data_category(path, data, load_processed = True):
+def get_data_category(args, path, data, load_processed = True):
     """ For link prediction. """
     if load_processed:
         with open(os.path.join(path, data, 'subgraphs.pkl'), 'rb') as f:
@@ -154,6 +164,10 @@ def get_data_category(path, data, load_processed = True):
         logging.info('subgraphing')
         graphs = _subgraphing(graph, partion, mapping_item2category)
 
+    perm = torch.randperm(len(graphs))
+    category_split = torch.split(perm, args.client_num_in_total)
+    graphs = combine_category(graphs, category_split)
+
     logging.info('converting to node degree')
     graphs = _convert_to_nodeDegreeFeatures(graphs)
     graphs_split = []
@@ -163,7 +177,7 @@ def get_data_category(path, data, load_processed = True):
     return graphs_split
 
 def partition_by_category(graph, mapping_item2category):
-    partition = {}
+    artition = {}
     for key in mapping_item2category:
         partition[key] = [mapping_item2category[key]]
         for neighbor in graph.neighbors(key):
@@ -172,16 +186,16 @@ def partition_by_category(graph, mapping_item2category):
             partition[neighbor].append(mapping_item2category[key])
     return partition
 
-def create_category_split(path, data, pred_task='link_prediction', algo='Louvain'):
+def create_category_split(args, path, data, pred_task='link_prediction', algo='Louvain'):
     assert pred_task in ['link_prediction']
     logging.info("reading data")
 
-    graphs_split = get_data_category(path, data, load_processed = True)
+    graphs_split = get_data_category(args, path, data, load_processed = True)
 
     return graphs_split
 
 def partition_data_by_category(args, path, compact=True):
-    graphs_split = create_category_split(path, args.dataset, args.pred_task)
+    graphs_split = create_category_split(args, path, args.dataset, args.pred_task)
 
     client_number = len(graphs_split)
 
