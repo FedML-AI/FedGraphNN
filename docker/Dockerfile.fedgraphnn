@@ -151,6 +151,6 @@ RUN sudo chmod 755 supervised-scripts/sync_all_nodes.sh
 ##############################################################################
 # Entry Point Script
 ##############################################################################
-ADD batch-runtime-scripts/entry-point.sh batch-runtime-scripts/entry-point.sh
+ADD entry-point.sh batch-runtime-scripts/entry-point.sh
 RUN sudo chmod 0755 batch-runtime-scripts/entry-point.sh
 CMD /batch-runtime-scripts/entry-point.sh
