@@ -14,13 +14,13 @@ sh run_fed_subgraph_link_pred.sh 28 28 1 8 gat uniform 0.1 2 2 1 0.01 64 5 0.1 c
 sh run_fed_subgraph_link_pred.sh 28 28 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 ciao
 
 # dataset: epinions; model: gcn
-sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
+sh run_fed_subgraph_link_pred.sh 27 27 1 8 gcn uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 
 # dataset: epinions; model: gat
-sh run_fed_subgraph_link_pred.sh 28 28 1 8 gat uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
+sh run_fed_subgraph_link_pred.sh 27 27 1 8 gat uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 
 # dataset: epinions; model: sage
-sh run_fed_subgraph_link_pred.sh 28 28 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
+sh run_fed_subgraph_link_pred.sh 27 27 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 ```
 
 ## Sweep Hyper-parameters

@@ -7,6 +7,8 @@ from time import sleep
 usage:
 python3 sweep_rs.py --starting_run_id 0
 """
+
+
 def add_args(parser):
     """
     parser : argparse.ArgumentParser
@@ -49,48 +51,57 @@ os.system(command)
 dataset_hpo = ["ciao", "epinions"]
 model_hpo = ["gcn", "gat", "sage"]
 partition_alpha_hpo = [0.1]
-round_num_hpo = [1, 10, 20, 50, 100, 200]
+round_num_hpo = [20, 50, 100]
 local_epoch_hpo = [1, 2, 5]
 batch_size_hpo = [1]
-lr_hpo = [0.1, 0.01, 0.001, 0.0001]
+lr_hpo = [0.01, 0.001, 0.0001]
 hidden_dim_hpo = [32, 64, 128, 256]
 n_layers_hpo = [3]
-dropout_hpo = [0.1, 0.3, 0.5]
+dropout_hpo = [0.3, 0.5, 0.7]
 
 run_id = 0
-for partition_alpha in partition_alpha_hpo:
-    for round_num in round_num_hpo:
-        for epoch in local_epoch_hpo:
-            for batch_size in batch_size_hpo:
-                for lr in lr_hpo:
-                    for hidden_dim in hidden_dim_hpo:
-                        for n_layers in n_layers_hpo:
-                            for dr in dropout_hpo:
-                                print(args.starting_run_id)
-                                print(run_id)
-                                if run_id < args.starting_run_id:
-                                    run_id += 1
-                                    continue
+for dataset in dataset_hpo:
+    for model in model_hpo:
+        for partition_alpha in partition_alpha_hpo:
+            for round_num in round_num_hpo:
+                for epoch in local_epoch_hpo:
+                    for batch_size in batch_size_hpo:
+                        for lr in lr_hpo:
+                            for hidden_dim in hidden_dim_hpo:
+                                for n_layers in n_layers_hpo:
+                                    for dr in dropout_hpo:
+                                        print(args.starting_run_id)
+                                        print(run_id)
+                                        if run_id < args.starting_run_id:
+                                            run_id += 1
+                                            continue
 
-                                args.partition_alpha = partition_alpha
-                                args.round_num = round_num
-                                args.epoch = epoch
-                                args.batch_size = batch_size
-                                args.lr = lr
-                                args.hidden_dim = hidden_dim
-                                args.n_layers = n_layers
-                                args.dr = dr
-                                args.run_id = run_id
+                                        args.dataset = dataset
+                                        args.model = model
+                                        args.partition_alpha = partition_alpha
+                                        args.round_num = round_num
+                                        args.epoch = epoch
+                                        args.batch_size = batch_size
+                                        args.lr = lr
+                                        args.hidden_dim = hidden_dim
+                                        args.n_layers = n_layers
+                                        args.dr = dr
+                                        args.run_id = run_id
+                                        if args.dataset == "ciao":
+                                            args.client_num = 28
+                                        elif args.dataset == "epinions":
+                                            args.client_num = 27
 
-                                print(args)
-                                # sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform 0.1 1 20 1 0.01 64 5 0.1 ciao
-                                os.system('nohup sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform {args.partition_alpha} '
-                                          '{args.round_num} {args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} ciao '
-                                          '> ./fedgnn_rs_{args.run_id}.log 2>&1 &'.format(args=args))
-                                wait_for_the_training_process()
-                                logging.info("cleaning the training...")
-                                command = "kill $(ps aux | grep fed_subgraph_link_pred.py | grep -v grep | awk '{{print $2}}')"
-                                print(command)
-                                os.system(command)
-                                sleep(5)
-                                run_id += 1
+                                        print(args)
+                                        # sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform 0.1 1 20 1 0.01 64 5 0.1 ciao
+                                        os.system(
+                                            'nohup sh run_fed_subgraph_link_pred.sh 28 28 1 8 {args.model} uniform {args.partition_alpha} '
+                                            '{args.round_num} {args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.dataset} '
+                                            '> ./fedgnn_rs_{args.run_id}.log 2>&1 &'.format(args=args))
+                                        wait_for_the_training_process()
+                                        logging.info("cleaning the training...")
+                                        command = "kill $(ps aux | grep fed_subgraph_link_pred.py | grep -v grep | awk '{{print $2}}')"
+                                        print(command)
+                                        os.system(command)
+                                        sleep(5)
+                                        run_id += 1
