@@ -3,10 +3,8 @@ import logging
 import numpy as np
 import torch
 import torch.nn.functional as F
-
 import wandb
-
-from sklearn.metrics import average_precision_score, roc_auc_score, mean_absolute_error
+from sklearn.metrics import mean_absolute_error
 
 from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
@@ -45,7 +43,6 @@ class FedSubgraphLPTrainer(ModelTrainer):
         for epoch in range(args.epochs):
 
             for idx_batch, batch in enumerate(train_data):
-
                 batch.to(device)
                 optimizer.zero_grad()
 
@@ -98,7 +95,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         return score, model
 
     def test_on_the_server(
-        self, train_data_local_dict, test_data_local_dict, device, args=None
+            self, train_data_local_dict, test_data_local_dict, device, args=None
     ) -> bool:
         logging.info("----------test_on_the_server--------")
 
@@ -124,7 +121,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
     def _compare_models(self, model_1, model_2):
         models_differ = 0
         for key_item_1, key_item_2 in zip(
-            model_1.state_dict().items(), model_2.state_dict().items()
+                model_1.state_dict().items(), model_2.state_dict().items()
         ):
             if torch.equal(key_item_1[1], key_item_2[1]):
                 pass

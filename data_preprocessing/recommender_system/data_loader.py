@@ -21,9 +21,6 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 
-setup_seed(2021)
-
-
 def split_graph(graph, train_ratio=0.8, val_ratio=0.1, test_ratio=0.1):
     assert train_ratio + val_ratio + test_ratio == 1
     graph.edge_label = graph.edge_label.float()

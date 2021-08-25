@@ -23,7 +23,6 @@ from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 from experiments.distributed.initializer import (
     add_federated_args,
     get_fl_algorithm_initializer,
-    set_seed,
 )
 
 
@@ -223,17 +222,6 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
     return device
 
 
-def post_complete_message_to_sweep_process(args):
-    logging.info("post_complete_message_to_sweep_process")
-    pipe_path = "./moleculenet_cls"
-    if not os.path.exists(pipe_path):
-        os.mkfifo(pipe_path)
-    pipe_fd = os.open(pipe_path, os.O_WRONLY)
-
-    with os.fdopen(pipe_fd, "w") as pipe:
-        pipe.write("training is finished! \n%s" % (str(args)))
-
-
 if __name__ == "__main__":
     #     # initialize distributed computing (MPI)
     comm, process_id, worker_number = FedML_init()
@@ -275,18 +263,18 @@ if __name__ == "__main__":
             # project="federated_nas",
             project="fedmolecule",
             name="FedGraphNN(d)"
-            + str(args.model)
-            + "r"
-            + str(args.dataset)
-            + "-lr"
-            + str(args.lr),
+                 + str(args.model)
+                 + "r"
+                 + str(args.dataset)
+                 + "-lr"
+                 + str(args.lr),
             config=args,
         )
 
     # Set the random seed. The np.random seed determines the dataset partition.
     # The torch_manual_seed determines the initial weight.
     # We fix these two, so that we can reproduce the result.
-    set_seed(0)
+    setup_seed(2021)
 
     # GPU arrangement: Please customize this function according your own topology.
     # The GPU server list is configured at "mpi_host_file".
@@ -342,6 +330,3 @@ if __name__ == "__main__":
         args,
         trainer,
     )
-
-    if process_id == 0:
-        post_complete_message_to_sweep_process(args)
