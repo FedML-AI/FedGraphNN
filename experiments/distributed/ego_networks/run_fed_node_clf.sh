@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
+# sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 0.0001 cora
 CLIENT_NUM=$1
 WORKER_NUM=$2
 SERVER_NUM=$3
@@ -15,7 +15,8 @@ LR=${11} # 0.0015
 HIDDEN_DIM=${12} # 32
 N_LAYERS=${13} # 3
 DR=${14} # 0.3
-DATASET=${15}
+WD=${15} # 0.3
+DATASET=${16}
 
 
 PROCESS_NUM=`expr $WORKER_NUM + 1`
@@ -38,4 +39,5 @@ mpirun -np $PROCESS_NUM -hostfile ./mpi_host_file python3 fed_node_clf.py \
   --epochs $EPOCH \
   --batch_size $BATCH_SIZE \
   --n_layers $N_LAYERS \
-  --lr $LR
+  --lr $LR \
+  --wd $WD

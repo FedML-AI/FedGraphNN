@@ -148,17 +148,6 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
     return device
 
 
-def post_complete_message_to_sweep_process(args):
-    logging.info("post_complete_message_to_sweep_process")
-    pipe_path = "./sweep/fedgraphnn-node-level"
-    if not os.path.exists(pipe_path):
-        os.mkfifo(pipe_path)
-    pipe_fd = os.open(pipe_path, os.O_WRONLY)
-
-    with os.fdopen(pipe_fd, 'w') as pipe:
-        pipe.write("training is finished! \n%s" % (str(args)))
-
-
 if __name__ == "__main__":
     #     # initialize distributed computing (MPI)
     comm, process_id, worker_number = FedML_init()
@@ -190,7 +179,7 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
-            name="FedGraphNN(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
+            name="(sweeping) FedGraphNN(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
             config=args
         )
 
@@ -230,7 +219,3 @@ if __name__ == "__main__":
            model, train_data_num, train_data_global, test_data_global,
            data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
            trainer)
-
-    if process_id == 0:
-        post_complete_message_to_sweep_process(args)
-
