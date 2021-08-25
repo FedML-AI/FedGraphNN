@@ -2,6 +2,7 @@ import copy
 import logging
 import os
 import pickle
+import random
 
 import networkx as nx
 import numpy as np
