@@ -11,7 +11,6 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import torch.nn.functional as F
 import torch
-from torch_geometric.datasets import CitationFull
 from torch_geometric.data import Data, DataLoader
 from torch_geometric.utils import k_hop_subgraph, from_networkx
 from torch_geometric.utils import train_test_split_edges
@@ -100,7 +99,7 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
 
 
 def get_data_category(path, data, algo):
-    """ For relation prediction. """
+    """ For link prediction. """
 
     mapping_user = _read_mapping(path, data, 'user.dict')
     mapping_item = _read_mapping(path, data, 'item.dict')
@@ -133,37 +132,6 @@ def create_category_split(path, data, pred_task='link_prediction', algo='Louvain
 
     return graphs_split
 
-
-def create_non_uniform_split(args, idxs, client_number, is_train=True):
-    logging.info("create_non_uniform_split------------------------------------------")
-    N = len(idxs)
-    alpha = args.partition_alpha
-    logging.info("sample number = %d, client_number = %d" % (N, client_number))
-    logging.info(idxs)
-    idx_batch_per_client = [[] for _ in range(client_number)]
-    idx_batch_per_client, min_size = partition_class_samples_with_dirichlet_distribution(N, alpha, client_number,
-                                                                                         idx_batch_per_client, idxs)
-    logging.info(idx_batch_per_client)
-    sample_num_distribution = []
-
-    for client_id in range(client_number):
-        sample_num_distribution.append(len(idx_batch_per_client[client_id]))
-        logging.info("client_id = %d, sample_number = %d" % (client_id, len(idx_batch_per_client[client_id])))
-    logging.info("create_non_uniform_split******************************************")
-
-    # plot the (#client, #sample) distribution
-    if is_train:
-        logging.info(sample_num_distribution)
-        plt.hist(sample_num_distribution)
-        plt.title("Sample Number Distribution")
-        plt.xlabel('number of samples')
-        plt.ylabel("number of clients")
-        fig_name = "x_hist.png"
-        fig_dir = os.path.join("./visualization", fig_name)
-        plt.savefig(fig_dir)
-    return idx_batch_per_client
-
-
 def partition_data_by_category(args, path, compact=True):
     graphs_split = create_category_split(path, args.dataset, args.pred_task, args.part_algo)
 
@@ -171,7 +139,6 @@ def partition_data_by_category(args, path, compact=True):
 
     partition_dicts = [None] * client_number
 
-    labels_of_all_clients = []
     for client in range(client_number):
 
         partition_dict = {'graph': graphs_split[client]}
@@ -194,9 +161,6 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
 
     data_local_num_dict = {}
     train_data_local_dict = {}
-
-    # collator = WalkForestCollator(normalize_features=normalize_features) if compact \
-    #     else DefaultCollator(normalize_features=normalize_features, normalize_adj=normalize_adj)
 
     # This is a PyG Dataloader
     train_data_global = DataLoader(global_data_dict['graphs'], batch_size=1, shuffle=True,

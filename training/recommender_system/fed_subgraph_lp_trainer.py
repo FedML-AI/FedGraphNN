@@ -6,8 +6,6 @@ import torch.nn.functional as F
 
 import wandb
 
-from torch_geometric.utils import negative_sampling
-
 from sklearn.metrics import average_precision_score, roc_auc_score, mean_absolute_error
 
 from FedML.fedml_core.trainer.model_trainer import ModelTrainer
@@ -29,14 +27,6 @@ class FedSubgraphLPTrainer(ModelTrainer):
 
         model.to(device)
         model.train()
-
-        # val_data, test_data = None, None
-        # try:
-        #     val_data = self.val_data
-        #     test_data = self.test_data
-        # except:
-        #     pass
-
         if args.client_optimizer == "sgd":
             optimizer = torch.optim.SGD(filter(lambda p: p.requires_grad, model.parameters()), lr=args.lr, weight_decay = args.wd)
         else:
@@ -45,48 +35,36 @@ class FedSubgraphLPTrainer(ModelTrainer):
         max_test_score = 0
         best_model_params = {}
         for epoch in range(args.epochs):
-            ngraphs = 0
-            cum_score = 0
 
             for idx_batch, batch in enumerate(train_data):
-
-                # neg_edge_index = negative_sampling(
-                #     edge_index=batch.edge_train, num_neg_samples=0)
                 
                 batch.to(device)
                 optimizer.zero_grad()
 
                 z = model.encode(batch.x, batch.edge_train)
-                # self.train_z = z
                 link_logits = model.decode(z, batch.edge_train)
                 link_labels = batch.label_train
-                # link_labels = self.get_link_labels(batch.edge_index, neg_edge_index, device)
                 loss = F.mse_loss(link_logits, link_labels)
                 loss.backward()
                 optimizer.step()
 
-            # if val_data:
-            #     acc_v, _ = self.test(val_data, device)
-
-            # if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (idx_batch == len(train_data) - 1):
             if train_data is not None:
                 test_score, _ = self.test(train_data, device, val = True, metric = self.metric_fn)
-                logging.info('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
+                print('Epoch = {}, Iter = {}/{}: Test score = {}'.format(epoch, idx_batch + 1, len(train_data), test_score))
                 if test_score < max_test_score:
                     max_test_score = test_score
                     best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
-                logging.info('Current best = {}'.format(max_test_score))
+                print('Current best = {}'.format(max_test_score))
 
         return max_test_score, best_model_params
 
     def test(self, test_data, device, val = True, metric = mean_absolute_error):
+        logging.info("----------test--------")
         model = self.model
         model.eval()
         model.to(device)
         metric = metric
 
-        # cum_score = 0.
-        # ngraphs = 0
         for batch in test_data:
             batch.to(device)
             with torch.no_grad():
@@ -95,17 +73,14 @@ class FedSubgraphLPTrainer(ModelTrainer):
                     link_logits = model.decode(train_z, batch.edge_val)
                 else:
                     link_logits = model.decode(train_z, batch.edge_test)
-                # link_probs = link_logits.sigmoid()
-                # link_labels = self.get_link_labels(pos_edge_index, neg_edge_index)
+
                 if val == True:
                     link_labels = batch.label_val
                 else:
                     link_labels = batch.label_test
                 score = metric(link_labels.cpu(), link_logits.cpu())
-                # logging.info(score)
-            # cum_score += self.metric_fn(link_labels.cpu(), link_probs.cpu())
-            # ngraphs += batch.num_graphs
         return score, model
+
 
     def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
         logging.info("----------test_on_the_server--------")
@@ -141,7 +116,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         if models_differ == 0:
             logging.info('Models match perfectly! :)')
 
-    def get_link_labels(self, pos_edge_index, neg_edge_index, device):
+    def get_link_labels(pos_edge_index, neg_edge_index, device):
         num_links = pos_edge_index.size(1) + neg_edge_index.size(1)
         link_labels = torch.zeros(num_links, dtype=torch.float, device=device)
         link_labels[:pos_edge_index.size(1)] = 1.
