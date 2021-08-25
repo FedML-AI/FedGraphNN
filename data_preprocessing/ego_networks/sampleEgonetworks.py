@@ -4,6 +4,7 @@ import pickle
 import random
 import time
 
+import numpy as np
 import torch
 import torch.nn.functional as F
 
@@ -104,8 +105,18 @@ def get_data(path, data, ego_number, hop_number):
 
     return subgraphs, num_graphs, num_features, num_labels
 
+def set_seed(seed):
+    torch.backends.cudnn.deterministic = True
+    torch.backends.cudnn.benchmark = False
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+
 
 if __name__ == "__main__":
+    set_seed(2021)
+
     parser = argparse.ArgumentParser()
     parser.add_argument(
         "--path", help="the path for loading dataset", type=str, default="./data"

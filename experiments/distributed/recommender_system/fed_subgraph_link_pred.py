@@ -213,6 +213,8 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
         process_gpu_dict[client_index] = gpu_index
 
     logging.info(process_gpu_dict)
+    if torch.cuda.is_available():
+        torch.cuda.set_device(process_gpu_dict[process_ID - 1])
     device = torch.device(
         "cuda:" + str(process_gpu_dict[process_ID - 1])
         if torch.cuda.is_available()

@@ -1,4 +1,4 @@
-FROM nvidia/cuda:11.0-devel-ubuntu18.04
+FROM nvidia/cuda:11.1-devel-ubuntu18.04
 
 
 ##############################################################################
@@ -116,19 +116,13 @@ RUN pip3 install mpi4py \
     Celery==4.4.7 \
     dill==0.3.3
 
-
-##############################################################################
-# PyTorch (latest version: 2021.08.21)
-##############################################################################
-RUN sudo pip3 install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions future six requests dataclasses h5py
-RUN cd ${INSTALL_DIR} && git clone https://github.com/pytorch/pytorch.git && cd pytorch && git submodule sync && git submodule update --init --recursive && sudo USE_SYSTEM_NCCL=1 TORCH_CUDA_ARCH_LIST="6.0 6.1 7.0 7.5 8.0" python3 setup.py install
-
 ##############################################################################
 # install torch-geometric (https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
 ##############################################################################
-RUN pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu110.html
-RUN pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu110.html
+RUN pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html
+RUN pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html
 RUN pip install torch-geometric
+
 
 ##############################################################################
 ## Add fedgraphnn user
@@ -142,8 +136,17 @@ USER fedgraphnn
 
 
 ##############################################################################
+# PyTorch (latest version: v1.9.0)
+##############################################################################
+RUN sudo pip3 install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions future six requests dataclasses h5py
+RUN sudo pip3 install torch torchvision torchaudio
+
+##############################################################################
 # Supervisor container startup
 ##############################################################################
+RUN sudo apt-get update && \
+    sudo apt-get install -y supervisor && \
+    sudo apt-get clean
 ADD supervisord.conf /etc/supervisor/supervisord.conf
 ADD sync_all_nodes.sh supervised-scripts/sync_all_nodes.sh
 RUN sudo chmod 755 supervised-scripts/sync_all_nodes.sh
@@ -151,6 +154,6 @@ RUN sudo chmod 755 supervised-scripts/sync_all_nodes.sh
 ##############################################################################
 # Entry Point Script
 ##############################################################################
-ADD entry-point.sh batch-runtime-scripts/entry-point.sh
-RUN sudo chmod 0755 batch-runtime-scripts/entry-point.sh
+ADD entry-point.sh /batch-runtime-scripts/entry-point.sh
+RUN sudo chmod 0755 /batch-runtime-scripts/entry-point.sh
 CMD /batch-runtime-scripts/entry-point.sh

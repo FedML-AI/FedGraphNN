@@ -2,15 +2,15 @@
 set -x
 
 # install pytorch (please double check your CUDA version before executing this shell)
-conda install pytorch torchvision torchaudio cudatoolkit=11.0 -c pytorch -c nvidia
+conda install pytorch torchvision torchaudio cudatoolkit=11.1 -c pytorch -c nvidia
 conda install -c anaconda mpi4py grpcio
 
 conda install scikit-learn numpy h5py setproctitle networkx
 pip install -r requirements.txt
 
 # install torch-geometric (https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
-pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu110.html
-pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu110.html
+pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html &&
+pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html &&
 pip install torch-geometric
 
 # install FedML git submodule
