@@ -46,14 +46,16 @@ command = "kill $(ps aux | grep fed_subgraph_link_pred.py | grep -v grep | awk '
 print(command)
 os.system(command)
 
-partition_alpha_hpo = [0.1, 0.5, 1.0, 10.0]
+dataset_hpo = ["ciao", "epinions"]
+model_hpo = ["gcn", "gat", "sage"]
+partition_alpha_hpo = [0.1]
 round_num_hpo = [1, 10, 20, 50, 100, 200]
 local_epoch_hpo = [1, 2, 5]
 batch_size_hpo = [1]
 lr_hpo = [0.1, 0.01, 0.001, 0.0001]
-hidden_dim_hpo = [32, 64, 128]
-n_layers_hpo = [3, 5, 8, 10]
-dropout_hpo = [0.1, 0.3, 0.5, 0.6]
+hidden_dim_hpo = [32, 64, 128, 256]
+n_layers_hpo = [3]
+dropout_hpo = [0.1, 0.3, 0.5]
 
 run_id = 0
 for partition_alpha in partition_alpha_hpo:
