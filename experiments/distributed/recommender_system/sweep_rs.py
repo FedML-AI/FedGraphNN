@@ -37,9 +37,11 @@ def wait_for_the_training_process():
 
 
 # customize the log format
-logging.basicConfig(level=logging.INFO,
-                    format='%(process)s %(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-                    datefmt='%Y-%m-%d,%H:%M:%S')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(process)s %(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s",
+    datefmt="%Y-%m-%d,%H:%M:%S",
+)
 
 parser = argparse.ArgumentParser()
 args = add_args(parser)
@@ -95,9 +97,12 @@ for dataset in dataset_hpo:
                                         print(args)
                                         # sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform 0.1 1 20 1 0.01 64 5 0.1 ciao
                                         os.system(
-                                            'nohup sh run_fed_subgraph_link_pred.sh 28 28 1 8 {args.model} uniform {args.partition_alpha} '
-                                            '{args.round_num} {args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.dataset} '
-                                            '> ./fedgnn_rs_{args.run_id}.log 2>&1 &'.format(args=args))
+                                            "nohup sh run_fed_subgraph_link_pred.sh 28 28 1 8 {args.model} uniform {args.partition_alpha} "
+                                            "{args.round_num} {args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.dataset} "
+                                            "> ./fedgnn_rs_{args.run_id}.log 2>&1 &".format(
+                                                args=args
+                                            )
+                                        )
                                         wait_for_the_training_process()
                                         logging.info("cleaning the training...")
                                         command = "kill $(ps aux | grep fed_subgraph_link_pred.py | grep -v grep | awk '{{print $2}}')"

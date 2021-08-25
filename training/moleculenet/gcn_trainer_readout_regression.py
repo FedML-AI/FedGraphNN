@@ -10,8 +10,8 @@ from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
 # Trainer for MoleculeNet. The evaluation metric is RMSE, by default
 
-class GcnMoleculeNetTrainer(ModelTrainer):
 
+class GcnMoleculeNetTrainer(ModelTrainer):
     def get_model_params(self):
         return self.model.cpu().state_dict()
 
@@ -31,24 +31,29 @@ class GcnMoleculeNetTrainer(ModelTrainer):
         except:
             pass
 
-        criterion = torch.nn.MSELoss() if args.dataset != 'qm9' else torch.nn.MAELoss()
+        criterion = torch.nn.MSELoss() if args.dataset != "qm9" else torch.nn.MAELoss()
         if args.client_optimizer == "sgd":
             optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
         else:
             optimizer = torch.optim.Adam(model.parameters(), lr=args.lr)
 
-        
-        min_score = np.Inf if args.metric != 'r2' else -np.Inf
+        min_score = np.Inf if args.metric != "r2" else -np.Inf
         best_model_params = {}
         # print('Training on {}'.format(torch.cuda.get_device_name()))
         for epoch in range(args.epochs):
             avg_loss = 0
             count = 0
-            for mol_idxs, (adj_matrix, feature_matrix, label, _) in enumerate(train_data):
+            for mol_idxs, (adj_matrix, feature_matrix, label, _) in enumerate(
+                train_data
+            ):
                 optimizer.zero_grad()
 
-                adj_matrix = adj_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
-                feature_matrix = feature_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
+                adj_matrix = adj_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
+                feature_matrix = feature_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
                 label = label.to(device=device, dtype=torch.float32, non_blocking=True)
 
                 logits = model(adj_matrix, feature_matrix)
@@ -58,20 +63,28 @@ class GcnMoleculeNetTrainer(ModelTrainer):
 
                 if test_data is not None:
                     test_score, _ = self.test(self.test_data, device, args)
-                    if args.metric != 'r2':
-                        print('Epoch = {}: Test {} = {}'.format(epoch, args.metric.upper(),test_score))
+                    if args.metric != "r2":
+                        print(
+                            "Epoch = {}: Test {} = {}".format(
+                                epoch, args.metric.upper(), test_score
+                            )
+                        )
                         if test_score < min_score:
                             min_score = test_score
-                            best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
-                        print('Current best {}= {}'.format(args.metric.upper(),min_score))
+                            best_model_params = {
+                                k: v.cpu() for k, v in model.state_dict().items()
+                            }
+                        print(
+                            "Current best {}= {}".format(args.metric.upper(), min_score)
+                        )
                     else:
-                        print('Epoch = {}: Test R2 = {}'.format(epoch, test_score))
+                        print("Epoch = {}: Test R2 = {}".format(epoch, test_score))
                         if test_score > min_score:
                             min_score = test_score
-                            best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
-                        print('Current best R2= {}'.format(min_score))
-
-                                
+                            best_model_params = {
+                                k: v.cpu() for k, v in model.state_dict().items()
+                            }
+                        print("Current best R2= {}".format(min_score))
 
             #
             #     avg_loss += loss.item()
@@ -91,22 +104,30 @@ class GcnMoleculeNetTrainer(ModelTrainer):
             y_pred = []
             y_true = []
             for mol_idx, (adj_matrix, feature_matrix, label, _) in enumerate(test_data):
-                adj_matrix = adj_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
-                feature_matrix = feature_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
+                adj_matrix = adj_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
+                feature_matrix = feature_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
                 label = label.to(device=device, dtype=torch.float32, non_blocking=True)
                 logits = model(adj_matrix, feature_matrix)
                 y_pred.append(logits.cpu().numpy())
                 y_true.append(label.cpu().numpy())
 
-            if args.metric == 'rmse':
-                score = mean_squared_error(np.array(y_true), np.array(y_pred), squared=False)
-            elif args.metric == 'r2':
+            if args.metric == "rmse":
+                score = mean_squared_error(
+                    np.array(y_true), np.array(y_pred), squared=False
+                )
+            elif args.metric == "r2":
                 score = r2_score(np.array(y_true), np.array(y_pred))
             else:
                 score = mean_absolute_error(np.array(y_true), np.array(y_pred))
         return score, model
 
-    def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
+    def test_on_the_server(
+        self, train_data_local_dict, test_data_local_dict, device, args=None
+    ) -> bool:
         logging.info("----------test_on_the_server--------")
         # for client_idx in train_data_local_dict.keys():
         #     train_data = train_data_local_dict[client_idx]
@@ -121,27 +142,32 @@ class GcnMoleculeNetTrainer(ModelTrainer):
                 self._compare_models(model, model_list[idx])
             model_list.append(model)
             score_list.append(score)
-            logging.info('Client {}, Test {} = {}'.format(client_idx,args.metric.upper(), score))
-            wandb.log({"Client {} Test/{}".format(client_idx,args.metric.upper()): score})
+            logging.info(
+                "Client {}, Test {} = {}".format(client_idx, args.metric.upper(), score)
+            )
+            wandb.log(
+                {"Client {} Test/{}".format(client_idx, args.metric.upper()): score}
+            )
 
-                
         avg_score = list(map(lambda x: sum(x) / len(x), zip(*score_list)))
 
-        logging.info('Test {} score = {}'.format(args.metric.upper(),avg_score))
+        logging.info("Test {} score = {}".format(args.metric.upper(), avg_score))
         wandb.log({"Test/{}}".format(args.metric.upper()): avg_score})
-        
+
         return True
-        
+
     def _compare_models(self, model_1, model_2):
         models_differ = 0
-        for key_item_1, key_item_2 in zip(model_1.state_dict().items(), model_2.state_dict().items()):
+        for key_item_1, key_item_2 in zip(
+            model_1.state_dict().items(), model_2.state_dict().items()
+        ):
             if torch.equal(key_item_1[1], key_item_2[1]):
                 pass
             else:
                 models_differ += 1
-                if (key_item_1[0] == key_item_2[0]):
-                    logging.info('Mismatch found at', key_item_1[0])
+                if key_item_1[0] == key_item_2[0]:
+                    logging.info("Mismatch found at", key_item_1[0])
                 else:
                     raise Exception
         if models_differ == 0:
-            logging.info('Models match perfectly! :)')
+            logging.info("Models match perfectly! :)")

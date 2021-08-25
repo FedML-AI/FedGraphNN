@@ -7,6 +7,7 @@ from sklearn.model_selection import train_test_split
 from torch_geometric.utils import to_networkx, degree
 import torch.nn.functional as F
 
+
 def convert_to_nodeDegreeFeatures(graphs):
     # print(graph.x)
     graph_infos = []
@@ -16,7 +17,9 @@ def convert_to_nodeDegreeFeatures(graphs):
         gdegree = max(dict(g.degree).values())
         if gdegree > maxdegree:
             maxdegree = gdegree
-        graph_infos.append((graph, g.degree, graph.num_nodes))    # (graph, node_degrees, num_nodes)
+        graph_infos.append(
+            (graph, g.degree, graph.num_nodes)
+        )  # (graph, node_degrees, num_nodes)
 
     new_graphs = []
     for i, tuple in enumerate(graph_infos):
@@ -25,14 +28,22 @@ def convert_to_nodeDegreeFeatures(graphs):
         deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
 
         new_graph = tuple[0].clone()
-        new_graph.__setitem__('x', deg)
+        new_graph.__setitem__("x", deg)
         new_graphs.append(new_graph)
 
     return new_graphs
 
+
 def split_data(graphs, train=None, test=None, shuffle=True, seed=None):
     y = torch.cat([graph.y for graph in graphs])
-    graphs_tv, graphs_test = train_test_split(graphs, train_size=train, test_size=test, stratify=y, shuffle=shuffle, random_state=seed)
+    graphs_tv, graphs_test = train_test_split(
+        graphs,
+        train_size=train,
+        test_size=test,
+        stratify=y,
+        shuffle=shuffle,
+        random_state=seed,
+    )
     return graphs_tv, graphs_test
 
 
@@ -41,24 +52,33 @@ def np_uniform_sample_next(compact_adj, tree, fanout):
     batch_lengths = compact_adj.degrees[last_level]
     nodes = np.repeat(last_level, fanout, axis=1)
     batch_lengths = np.repeat(batch_lengths, fanout, axis=1)
-    batch_next_neighbor_ids = np.random.uniform(size=batch_lengths.shape, low=0, high=1 - 1e-9)
+    batch_next_neighbor_ids = np.random.uniform(
+        size=batch_lengths.shape, low=0, high=1 - 1e-9
+    )
     # Shape = (len(nodes), neighbors_per_node)
     batch_next_neighbor_ids = np.array(
-        batch_next_neighbor_ids * batch_lengths,
-        dtype=last_level.dtype)
+        batch_next_neighbor_ids * batch_lengths, dtype=last_level.dtype
+    )
     shape = batch_next_neighbor_ids.shape
     batch_next_neighbor_ids = np.array(
-        compact_adj.compact_adj[nodes.reshape(-1), batch_next_neighbor_ids.reshape(-1)]).reshape(shape)
+        compact_adj.compact_adj[nodes.reshape(-1), batch_next_neighbor_ids.reshape(-1)]
+    ).reshape(shape)
 
     return batch_next_neighbor_ids
 
 
-def np_traverse(compact_adj, seed_nodes, fanouts=(1,), sample_fn=np_uniform_sample_next):
+def np_traverse(
+    compact_adj, seed_nodes, fanouts=(1,), sample_fn=np_uniform_sample_next
+):
     if not isinstance(seed_nodes, np.ndarray):
-        raise ValueError('Seed must a numpy array')
+        raise ValueError("Seed must a numpy array")
 
-    if len(seed_nodes.shape) > 2 or len(seed_nodes.shape) < 1 or not str(seed_nodes.dtype).startswith('int'):
-        raise ValueError('seed_nodes must be 1D or 2D int array')
+    if (
+        len(seed_nodes.shape) > 2
+        or len(seed_nodes.shape) < 1
+        or not str(seed_nodes.dtype).startswith("int")
+    ):
+        raise ValueError("seed_nodes must be 1D or 2D int array")
 
     if len(seed_nodes.shape) == 1:
         seed_nodes = np.expand_dims(seed_nodes, 1)
@@ -92,7 +112,7 @@ class WalkForestCollator(object):
             mx = sp.csr_matrix(feature_matrix)
             rowsum = np.array(mx.sum(1))
             r_inv = np.power(rowsum, -1).flatten()
-            r_inv[np.isinf(r_inv)] = 0.
+            r_inv[np.isinf(r_inv)] = 0.0
             r_mat_inv = sp.diags(r_inv)
             normalized_feature_matrix = r_mat_inv.dot(mx)
             normalized_feature_matrix = np.array(normalized_feature_matrix.todense())
@@ -101,7 +121,11 @@ class WalkForestCollator(object):
             scaler.fit(feature_matrix)
             normalized_feature_matrix = scaler.transform(feature_matrix)
 
-        return torch_forest, torch.as_tensor(normalized_feature_matrix, dtype=torch.float32), torch.as_tensor(label, dtype=torch.float32), 
+        return (
+            torch_forest,
+            torch.as_tensor(normalized_feature_matrix, dtype=torch.float32),
+            torch.as_tensor(label, dtype=torch.float32),
+        )
 
 
 class DefaultCollator(object):
@@ -117,7 +141,7 @@ class DefaultCollator(object):
             mx = sp.csr_matrix(feature_matrix)
             rowsum = np.array(mx.sum(1))
             r_inv = np.power(rowsum, -1).flatten()
-            r_inv[np.isinf(r_inv)] = 0.
+            r_inv[np.isinf(r_inv)] = 0.0
             r_mat_inv = sp.diags(r_inv)
             normalized_feature_matrix = r_mat_inv.dot(mx)
             normalized_feature_matrix = np.array(normalized_feature_matrix.todense())
@@ -129,12 +153,18 @@ class DefaultCollator(object):
         if self.normalize_adj:
             rowsum = np.array(adj_matrix.sum(1))
             r_inv_sqrt = np.power(rowsum, -0.5).flatten()
-            r_inv_sqrt[np.isinf(r_inv_sqrt)] = 0.
+            r_inv_sqrt[np.isinf(r_inv_sqrt)] = 0.0
             r_mat_inv_sqrt = sp.diags(r_inv_sqrt)
-            normalized_adj_matrix = adj_matrix.dot(r_mat_inv_sqrt).transpose().dot(r_mat_inv_sqrt)
+            normalized_adj_matrix = (
+                adj_matrix.dot(r_mat_inv_sqrt).transpose().dot(r_mat_inv_sqrt)
+            )
         else:
             normalized_adj_matrix = adj_matrix
 
-        return torch.as_tensor(np.array(normalized_adj_matrix.todense()), dtype=torch.float32), \
-               torch.as_tensor(normalized_feature_matrix, dtype=torch.float32), \
-               torch.as_tensor(label, dtype=torch.float32)
+        return (
+            torch.as_tensor(
+                np.array(normalized_adj_matrix.todense()), dtype=torch.float32
+            ),
+            torch.as_tensor(normalized_feature_matrix, dtype=torch.float32),
+            torch.as_tensor(label, dtype=torch.float32),
+        )

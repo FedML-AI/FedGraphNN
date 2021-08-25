@@ -1,7 +1,5 @@
-
 import torch
 from torch_geometric.nn import GCNConv
-
 
 
 class GCNLinkPred(torch.nn.Module):

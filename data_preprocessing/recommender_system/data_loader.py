@@ -21,8 +21,9 @@ def split_graph(graph, train_ratio=0.8, val_ratio=0.1, test_ratio=0.1):
     test_num = max(1, int(edge_size * test_ratio))
     train_num = edge_size - val_num - test_num
 
-    [train_split, val_split, test_split] = torch.utils.data.random_split(range(edge_size),
-                                                                         [train_num, val_num, test_num])
+    [train_split, val_split, test_split] = torch.utils.data.random_split(
+        range(edge_size), [train_num, val_num, test_num]
+    )
     train_split = torch.tensor(train_split)
     val_split = torch.tensor(val_split)
     test_split = torch.tensor(test_split)
@@ -76,7 +77,9 @@ def _convert_to_nodeDegreeFeatures(graphs):
         gdegree = max(dict(g.degree).values())
         if gdegree > maxdegree:
             maxdegree = gdegree
-        graph_infos.append((graph, g.degree, graph.num_nodes))  # (graph, node_degrees, num_nodes)
+        graph_infos.append(
+            (graph, g.degree, graph.num_nodes)
+        )  # (graph, node_degrees, num_nodes)
 
     new_graphs = []
     for i, tpl in enumerate(graph_infos):
@@ -86,7 +89,7 @@ def _convert_to_nodeDegreeFeatures(graphs):
         deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
 
         new_graph = tpl[0].clone()
-        new_graph.__setitem__('x', deg)
+        new_graph.__setitem__("x", deg)
         new_graphs.append(new_graph)
 
     return new_graphs
@@ -129,7 +132,7 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
     dic = {}
     for node in G.nodes:
         dic[node] = node
-    nx.set_node_attributes(G, dic, 'index_orig')
+    nx.set_node_attributes(G, dic, "index_orig")
     return G
 
 
@@ -137,46 +140,49 @@ def combine_category(graphs, category_split):
     combined_graph = []
     for i in range(len(category_split)):
         ls = category_split[i]
-        logging.info('combining subgraphs for ' + str(i) + ' client')
+        logging.info("combining subgraphs for " + str(i) + " client")
         graph_new = graphs[ls[0]]
         for i in range(1, len(ls)):
-            logging.info('combined ' + str(i + 1) + ' subgraphs')
+            logging.info("combined " + str(i + 1) + " subgraphs")
             graph_new = combine_subgraphs(graph_new, graphs[ls[i]])
         combined_graph.append(graph_new)
     return combined_graph
 
 
 def get_data_category(args, path, data, load_processed=True):
-    """ For link prediction. """
+    """For link prediction."""
     if load_processed:
-        with open(os.path.join(path, data, 'subgraphs.pkl'), 'rb') as f:
+        with open(os.path.join(path, data, "subgraphs.pkl"), "rb") as f:
             graphs = pickle.load(f)
     else:
 
         logging.info("read mapping")
-        mapping_user = _read_mapping(path, data, 'user.dict')
-        mapping_item = _read_mapping(path, data, 'item.dict')
-        mapping_item2category = _read_mapping(path, data, 'category.dict')
-        logging.info('build networkx graph')
+        mapping_user = _read_mapping(path, data, "user.dict")
+        mapping_item = _read_mapping(path, data, "item.dict")
+        mapping_item2category = _read_mapping(path, data, "category.dict")
+        logging.info("build networkx graph")
 
-        graph = _build_nxGraph(path, data, 'graph.txt', mapping_user, mapping_item)
-        logging.info('get partion')
+        graph = _build_nxGraph(path, data, "graph.txt", mapping_user, mapping_item)
+        logging.info("get partion")
 
         partion = partition_by_category(graph, mapping_item2category)
-        logging.info('subgraphing')
+        logging.info("subgraphing")
         graphs = _subgraphing(graph, partion, mapping_item2category)
 
-    logging.info('check client num is smaller than subgraphs number, which is ' + str(len(graphs)))
+    logging.info(
+        "check client num is smaller than subgraphs number, which is "
+        + str(len(graphs))
+    )
     assert args.client_num_in_total <= len(graphs)
 
     perm = list(torch.randperm(len(graphs)))
     category_split = np.array_split(perm, args.client_num_in_total)
     graphs = combine_category(graphs, category_split)
 
-    logging.info('converting to node degree')
+    logging.info("converting to node degree")
     graphs = _convert_to_nodeDegreeFeatures(graphs)
     graphs_split = []
-    logging.info('spliting into trian val and test')
+    logging.info("spliting into trian val and test")
     for g in graphs:
         graphs_split.append(split_graph(g))
     return graphs_split
@@ -193,8 +199,10 @@ def partition_by_category(graph, mapping_item2category):
     return partition
 
 
-def create_category_split(args, path, data, pred_task='link_prediction', algo='Louvain'):
-    assert pred_task in ['link_prediction']
+def create_category_split(
+    args, path, data, pred_task="link_prediction", algo="Louvain"
+):
+    assert pred_task in ["link_prediction"]
     logging.info("reading data")
 
     graphs_split = get_data_category(args, path, data, load_processed=True)
@@ -210,21 +218,28 @@ def partition_data_by_category(args, path, compact=True):
     partition_dicts = [None] * client_number
 
     for client in range(client_number):
-        partition_dict = {'graph': graphs_split[client]}
+        partition_dict = {"graph": graphs_split[client]}
         partition_dicts[client] = partition_dict
 
     global_data_dict = {
-        'graphs': graphs_split,
+        "graphs": graphs_split,
     }
 
     return global_data_dict, partition_dicts
 
 
 # Single process sequential
-def load_partition_data(args, path, client_number, uniform=True, global_test=True, normalize_features=False,
-                        normalize_adj=False):
+def load_partition_data(
+    args,
+    path,
+    client_number,
+    uniform=True,
+    global_test=True,
+    normalize_features=False,
+    normalize_adj=False,
+):
     global_data_dict, partition_dicts = partition_data_by_category(args, path)
-    feature_dim = global_data_dict['graphs'][0].x.shape[1]
+    feature_dim = global_data_dict["graphs"][0].x.shape[1]
     client_number = len(partition_dicts)
     # args.client_num_in_total = client_number
 
@@ -232,21 +247,38 @@ def load_partition_data(args, path, client_number, uniform=True, global_test=Tru
     train_data_local_dict = {}
 
     # This is a PyG Dataloader
-    train_data_global = DataLoader(global_data_dict['graphs'], batch_size=1, shuffle=True,
-                                   pin_memory=True)
+    train_data_global = DataLoader(
+        global_data_dict["graphs"], batch_size=1, shuffle=True, pin_memory=True
+    )
 
-    train_data_num = len(global_data_dict['graphs'])
+    train_data_num = len(global_data_dict["graphs"])
 
     for client in range(client_number):
-        train_dataset_client = partition_dicts[client]['graph']
+        train_dataset_client = partition_dicts[client]["graph"]
 
         data_local_num_dict[client] = 1
-        train_data_local_dict[client] = DataLoader([train_dataset_client], batch_size=1, shuffle=True,
-                                                   pin_memory=True)
-        logging.info("Client idx = {}, local sample number = {}".format(client, len(train_dataset_client)))
+        train_data_local_dict[client] = DataLoader(
+            [train_dataset_client], batch_size=1, shuffle=True, pin_memory=True
+        )
+        logging.info(
+            "Client idx = {}, local sample number = {}".format(
+                client, len(train_dataset_client)
+            )
+        )
 
     val_data_num = test_data_num = train_data_num
     val_data_local_dict = test_data_local_dict = train_data_local_dict
     val_data_global = test_data_global = train_data_global
-    return train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
-           data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim
+    return (
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+        feature_dim,
+    )

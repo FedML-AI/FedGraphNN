@@ -7,6 +7,8 @@ from time import sleep
 usage:
 python3 sweep_rs.py --starting_run_id 0
 """
+
+
 def add_args(parser):
     """
     parser : argparse.ArgumentParser
@@ -35,9 +37,11 @@ def wait_for_the_training_process():
 
 
 # customize the log format
-logging.basicConfig(level=logging.INFO,
-                    format='%(process)s %(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-                    datefmt='%Y-%m-%d,%H:%M:%S')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(process)s %(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s",
+    datefmt="%Y-%m-%d,%H:%M:%S",
+)
 
 parser = argparse.ArgumentParser()
 args = add_args(parser)
@@ -85,9 +89,13 @@ for partition_alpha in partition_alpha_hpo:
 
                                     print(args)
                                     # sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
-                                    os.system('nohup sh run_fed_node_clf.sh 10 10 1 1 gcn hetero {args.partition_alpha} {args.round_num} '
-                                              '{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} cora '
-                                              '> ./fedgnn_rs_{args.run_id}.log 2>&1 &'.format(args=args))
+                                    os.system(
+                                        "nohup sh run_fed_node_clf.sh 10 10 1 1 gcn hetero {args.partition_alpha} {args.round_num} "
+                                        "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} cora "
+                                        "> ./fedgnn_rs_{args.run_id}.log 2>&1 &".format(
+                                            args=args
+                                        )
+                                    )
                                     wait_for_the_training_process()
                                     logging.info("cleaning the training...")
                                     command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2}}')"

@@ -1,11 +1,14 @@
-
 import torch
 from torch_geometric.nn import SAGEConv
 
 
-
 class SAGELinkPred(torch.nn.Module):
-    def __init__(self, in_channels, hidden_dim,  out_channels, ):
+    def __init__(
+        self,
+        in_channels,
+        hidden_dim,
+        out_channels,
+    ):
         super(SAGELinkPred, self).__init__()
         self.conv1 = SAGEConv(in_channels, hidden_dim)
         self.conv2 = SAGEConv(hidden_dim, out_channels)
