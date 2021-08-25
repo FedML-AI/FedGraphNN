@@ -25,6 +25,8 @@ sh run_fed_subgraph_link_pred.sh 27 27 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 
 
 ## Sweep Hyper-parameters
 ```
+# change id to your own
+wandb login ee0b5f53d949c84cee7decbe7a629e63fb2f8408
 wandb on
 python3 sweep_rs.py --starting_run_id 0
 ```
