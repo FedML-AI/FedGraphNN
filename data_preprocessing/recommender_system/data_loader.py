@@ -39,6 +39,38 @@ def split_graph(graph, train_ratio = 0.8, val_ratio = 0.1, test_ratio = 0.1):
     
     return graph
 
+def combine_subgraphs(graph_orig, graph_add):
+    graph_orig_dic = {}
+    for i in range(len(graph_orig.index_orig)):
+        graph_orig_dic[graph_orig.index_orig[i]] = i
+    
+    mapping_add = {}
+    node_count = len(graph_orig.index_orig)
+    
+    index_orig_new = []
+    
+    for i in range(len(graph_add.index_orig)):
+        if graph_add.index_orig[i] in graph_orig_dic:
+            mapping_add[i] = graph_orig_dic[i]
+        else:
+            mapping_add[i] = node_count
+            index_orig_new.append(graph_add.index_orig[i])
+            node_count += 1
+    index_final = torch.cat([graph_orig.index_orig, torch.tensor(index_orig_new)])
+    
+    edge_index_new = copy.deepcopy(graph_add.edge_index)
+    for key in mapping_add:
+        edge_index_new[edge_index_new == key] = mapping_add[key]
+        
+    edge_index_final = torch.cat([graph_orig.edge_index, edge_index_new], dim = -1)
+    edge_label_final = torch.cat([graph_orig.edge_label, graph_add.edge_label])
+    combined_graph = copy.deepcopy(graph_add)
+    
+    combined_graph.edge_index = edge_index_final
+    combined_graph.edge_label = edge_label_final
+    combined_graph.index_orig = index_final
+    return combined_graph
+
 def _convert_to_nodeDegreeFeatures(graphs):
     graph_infos = []
     maxdegree = 0
@@ -95,24 +127,33 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
             s = line.strip().split()
             s = [int(i) for i in s]
             G.add_edge(mapping_user[s[0]], mapping_item[s[1]], edge_label=s[2])
+    dic = {}
+    for node in G.nodes:
+        dic[node] = node
+    nx.set_node_attributes(G, dic, 'index_orig')
     return G
 
 
-def get_data_category(path, data, algo):
+def get_data_category(path, data, load_processed = True):
     """ For link prediction. """
+    if load_processed:
+        with open(os.path.join(path, data, 'subgraphs.pkl'), 'rb') as f:
+            graphs = pickle.load(f)
+    else:
 
-    logging.info("read mapping")
-    mapping_user = _read_mapping(path, data, 'user.dict')
-    mapping_item = _read_mapping(path, data, 'item.dict')
-    mapping_item2category = _read_mapping(path, data, 'category.dict')
-    logging.info('build networkx graph')
+        logging.info("read mapping")
+        mapping_user = _read_mapping(path, data, 'user.dict')
+        mapping_item = _read_mapping(path, data, 'item.dict')
+        mapping_item2category = _read_mapping(path, data, 'category.dict')
+        logging.info('build networkx graph')
+    
+        graph = _build_nxGraph(path, data, 'graph.txt', mapping_user, mapping_item)
+        logging.info('get partion')
+    
+        partion = partition_by_category(graph, mapping_item2category)
+        logging.info('subgraphing')
+        graphs = _subgraphing(graph, partion, mapping_item2category)
 
-    graph = _build_nxGraph(path, data, 'graph.txt', mapping_user, mapping_item)
-    logging.info('get partion')
-
-    partion = partition_by_category(graph, mapping_item2category)
-    logging.info('subgraphing')
-    graphs = _subgraphing(graph, partion, mapping_item2category)
     logging.info('converting to node degree')
     graphs = _convert_to_nodeDegreeFeatures(graphs)
     graphs_split = []
@@ -135,7 +176,7 @@ def create_category_split(path, data, pred_task='link_prediction', algo='Louvain
     assert pred_task in ['link_prediction']
     logging.info("reading data")
 
-    graphs_split = get_data_category(path, data, algo)
+    graphs_split = get_data_category(path, data, load_processed = True)
 
     return graphs_split
 
