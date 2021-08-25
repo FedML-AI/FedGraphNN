@@ -18,6 +18,14 @@ from torch_geometric.utils import train_test_split_edges
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import partition_class_samples_with_dirichlet_distribution
 
+def setup_seed(seed):
+     torch.manual_seed(seed)
+     torch.cuda.manual_seed_all(seed)
+     np.random.seed(seed)
+     random.seed(seed)
+     torch.backends.cudnn.deterministic = True
+setup_seed(2021)
+
 def split_graph(graph, train_ratio = 0.8, val_ratio = 0.1, test_ratio = 0.1):
     assert train_ratio + val_ratio + test_ratio == 1
     graph.edge_label = graph.edge_label.float()
@@ -219,12 +227,9 @@ def partition_data_by_category(args, path, compact=True):
 
 
 # Single process sequential
-def load_partition_data(args, path, client_number, uniform=True, global_test=True, normalize_features=False,
-                        normalize_adj=False):
+def load_partition_data(args, path, client_number):
     global_data_dict, partition_dicts = partition_data_by_category(args, path)
     feature_dim = global_data_dict['graphs'][0].x.shape[1]
-    client_number = len(partition_dicts)
-    # args.client_num_in_total = client_number
 
     data_local_num_dict = {}
     train_data_local_dict = {}

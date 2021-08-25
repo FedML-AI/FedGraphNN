@@ -94,8 +94,7 @@ def load_data(args, dataset_name):
     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim = load_partition_data(
         args,
         args.data_dir,
-        args.client_num_in_total,
-        uniform=True, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
+        args.client_num_in_total)
 
     dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
                data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim]
