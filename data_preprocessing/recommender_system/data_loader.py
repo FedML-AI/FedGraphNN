@@ -6,6 +6,7 @@ import logging
 import pickle
 import pandas as pd
 from torch_geometric.utils import to_networkx, degree
+import numpy as np
 
 import matplotlib.pyplot as plt
 import seaborn as sns
@@ -168,8 +169,8 @@ def get_data_category(args, path, data, load_processed = True):
     logging.info('check client num is smaller than subgraphs number, which is ' + str(len(graphs)))
     assert args.client_num_in_total <= len(graphs)
 
-    perm = torch.randperm(len(graphs))
-    category_split = torch.chunk(perm, args.client_num_in_total)
+    perm = list(torch.randperm(len(graphs)))
+    category_split = np.array_split(perm, args.client_num_in_total)
     graphs = combine_category(graphs, category_split)
 
     logging.info('converting to node degree')
