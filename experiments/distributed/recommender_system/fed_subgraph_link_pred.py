@@ -92,7 +92,7 @@ def load_data(args, dataset_name):
         args,
         args.data_dir,
         args.client_num_in_total,
-        uniform=unif, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
+        uniform=True, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
 
     dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
                data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict, feature_dim]
