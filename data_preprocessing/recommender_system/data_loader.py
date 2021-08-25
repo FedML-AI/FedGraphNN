@@ -136,6 +136,7 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
 def combine_category(graphs, category_split):
     combined_graph = []
     for i in range(len(category_split)):
+        ls = category_split[i]
         logging.info('combining subgraphs for ' + str(i) + 'client')
         graph_new = ls[0]
         for i in range(1, len(ls)):
@@ -165,7 +166,7 @@ def get_data_category(args, path, data, load_processed = True):
         graphs = _subgraphing(graph, partion, mapping_item2category)
 
     perm = torch.randperm(len(graphs))
-    category_split = torch.split(perm, args.client_num_in_total)
+    category_split = torch.chunk(perm, args.client_num_in_total)
     graphs = combine_category(graphs, category_split)
 
     logging.info('converting to node degree')
