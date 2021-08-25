@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
 from data_preprocessing.ego_networks.data_loader import *
 from model.ego_networks.gcn import GCNNodeCLF
 from model.ego_networks.sgc import SGCNodeCLF
+from model.ego_networks.sage import SAGENodeCLF
 
 from training.ego_networks.federated_nc_trainer import FedNodeClfTrainer
 
@@ -65,6 +66,8 @@ def add_args(parser):
     parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for LeakyRelu used in GAT')
 
     parser.add_argument('--num_heads', type=int, default=2, help='Number of attention heads used in GAT')
+
+    parser.add_argument('--K', type=int, default=32, help='Size of GraphSAGE hidden layer')
 
     parser.add_argument('--eps', type=int, default=0, help='Epsilon parameter used in GIN')
 
@@ -126,6 +129,9 @@ def create_model(args, model_name, feat_dim, num_cats, output_dim):
                            dropout=args.dropout)
     elif model_name == 'sgc':
         model = SGCNodeCLF(in_dim=feat_dim, num_classes=num_cats, K=args.n_layers)
+    elif model_name == 'sage':
+         model = SAGENodeCLF(nfeat=feat_dim, nhid=args.hidden_size, nclass=num_cats, nlayer=args.n_layers,
+                           dropout=args.dropout)
     else:
         # MORE MODELS
         raise Exception("such model does not exist !")
