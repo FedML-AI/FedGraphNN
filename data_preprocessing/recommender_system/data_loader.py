@@ -133,7 +133,7 @@ def create_category_split(path, data, pred_task='link_prediction', algo='Louvain
     return graphs_split
 
 def partition_data_by_category(args, path, compact=True):
-    graphs_split = create_category_split(path, args.dataset, args.pred_task, args.part_algo)
+    graphs_split = create_category_split(path, args.dataset, args.pred_task)
 
     client_number = len(graphs_split)
 
