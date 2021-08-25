@@ -64,9 +64,8 @@ def combine_subgraphs(graph_orig, graph_add):
         
     edge_index_final = torch.cat([graph_orig.edge_index, edge_index_new], dim = -1)
     edge_label_final = torch.cat([graph_orig.edge_label, graph_add.edge_label])
-    combined_graph = copy.deepcopy(graph_add)
+    combined_graph = Data(edge_index = edge_index_final)
     
-    combined_graph.edge_index = edge_index_final
     combined_graph.edge_label = edge_label_final
     combined_graph.index_orig = index_final
     return combined_graph
@@ -137,10 +136,10 @@ def combine_category(graphs, category_split):
     combined_graph = []
     for i in range(len(category_split)):
         ls = category_split[i]
-        logging.info('combining subgraphs for ' + str(i) + 'client')
+        logging.info('combining subgraphs for ' + str(i) + ' client')
         graph_new = graphs[ls[0]]
         for i in range(1, len(ls)):
-            logging.info('combined ' + str(i + 1) + 'subgraphs') 
+            logging.info('combined ' + str(i + 1) + ' subgraphs') 
             graph_new = combine_subgraphs(graph_new, graphs[ls[i]])
         combined_graph.append(graph_new)
     return combined_graph
@@ -164,6 +163,9 @@ def get_data_category(args, path, data, load_processed = True):
         partion = partition_by_category(graph, mapping_item2category)
         logging.info('subgraphing')
         graphs = _subgraphing(graph, partion, mapping_item2category)
+
+    logging.info('check client num is smaller than subgraphs number, which is ' + str(len(graphs)))
+    assert args.client_num_in_total <= len(graphs)
 
     perm = torch.randperm(len(graphs))
     category_split = torch.chunk(perm, args.client_num_in_total)
