@@ -82,12 +82,12 @@ class FedSubgraphLPTrainer(ModelTrainer):
             batch.to(device)
             with torch.no_grad():
                 train_z = model.encode(batch.x, batch.edge_train)
-                if val == True:
+                if val:
                     link_logits = model.decode(train_z, batch.edge_val)
                 else:
                     link_logits = model.decode(train_z, batch.edge_test)
 
-                if val == True:
+                if val:
                     link_labels = batch.label_val
                 else:
                     link_labels = batch.label_test

@@ -4,22 +4,22 @@
 ```
 # optimal hyper-parameters are obtained by the sweeping scripts (sweep_rs.py)
 
-# dataset: ciao; model: gcn
+# dataset: ciao; model: gcn; client_num = 28
 sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform 0.1 2 2 1 0.01 64 5 0.1 ciao
 
-# dataset: ciao; model: gat
+# dataset: ciao; model: gat; client_num = 28
 sh run_fed_subgraph_link_pred.sh 28 28 1 8 gat uniform 0.1 2 2 1 0.01 64 5 0.1 ciao
 
-# dataset: ciao; model: sage
+# dataset: ciao; model: sage; client_num = 28
 sh run_fed_subgraph_link_pred.sh 28 28 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 ciao
 
-# dataset: epinions; model: gcn
+# dataset: epinions; model: gcn; client_num = 27
 sh run_fed_subgraph_link_pred.sh 27 27 1 8 gcn uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 
-# dataset: epinions; model: gat
+# dataset: epinions; model: gat; client_num = 27
 sh run_fed_subgraph_link_pred.sh 27 27 1 8 gat uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 
-# dataset: epinions; model: sage
+# dataset: epinions; model: sage; client_num = 27
 sh run_fed_subgraph_link_pred.sh 27 27 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 ```
 
