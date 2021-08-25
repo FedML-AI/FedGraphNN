@@ -101,16 +101,22 @@ def _build_nxGraph(path, data, filename, mapping_user, mapping_item):
 def get_data_category(path, data, algo):
     """ For link prediction. """
 
+    logging.info("read mapping")
     mapping_user = _read_mapping(path, data, 'user.dict')
     mapping_item = _read_mapping(path, data, 'item.dict')
     mapping_item2category = _read_mapping(path, data, 'category.dict')
+    logging.info('build networkx graph')
 
     graph = _build_nxGraph(path, data, 'graph.txt', mapping_user, mapping_item)
+    logging.info('get partion')
 
     partion = partition_by_category(graph, mapping_item2category)
+    logging.info('subgraphing')
     graphs = _subgraphing(graph, partion, mapping_item2category)
+    logging.info('converting to node degree')
     graphs = _convert_to_nodeDegreeFeatures(graphs)
     graphs_split = []
+    logging.info('spliting into trian val and test')
     for g in graphs:
         graphs_split.append(split_graph(g))
     return graphs_split
@@ -127,6 +133,7 @@ def partition_by_category(graph, mapping_item2category):
 
 def create_category_split(path, data, pred_task='link_prediction', algo='Louvain'):
     assert pred_task in ['link_prediction']
+    logging.info("reading data")
 
     graphs_split = get_data_category(path, data, algo)
 
