@@ -82,7 +82,8 @@ def _convert_to_nodeDegreeFeatures(graphs):
 
     new_graphs = []
     for i, tpl in enumerate(graph_infos):
-        idx, x = tpl[0].edge_index[0], tpl[0].x
+        # idx, x = tpl[0].edge_index[0], tpl[0].x
+        idx, x = torch.tensor(range(tpl[0].num_nodes)), tpl[0].x
         deg = degree(idx, tpl[2], dtype=torch.long)
         deg = F.one_hot(deg, num_classes=maxdegree + 1).to(torch.float)
 
