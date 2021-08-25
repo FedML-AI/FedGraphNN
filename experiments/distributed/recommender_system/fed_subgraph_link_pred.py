@@ -12,6 +12,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "./../../../")))
 sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
 from data_preprocessing.recommender_system.data_loader import *
 from model.recommender_system.gcn_link import GCNLinkPred
+from model.recommender_system.gat_link import GATLinkPred
 
 from training.recommender_system.fed_subgraph_lp_trainer import FedSubgraphLPTrainer
 
@@ -104,6 +105,8 @@ def create_model(args, model_name, feature_dim):
     logging.info("create_model. model_name = %s" % (model_name))
     if model_name == 'gcn':
         model = GCNLinkPred(feature_dim, args.hidden_size, args.node_embedding_dim)
+    if model_name == 'gat':
+        model = GATLinkPred(feature_dim, args.hidden_size, args.node_embedding_dim, args.num_heads)
     else:
         raise Exception("such model does not exist !")
     trainer = FedSubgraphLPTrainer(model)
