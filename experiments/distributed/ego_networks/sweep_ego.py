@@ -50,6 +50,8 @@ command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2
 print(command)
 os.system(command)
 
+dataset_hpo = ["cora", "citeseer", "DBLP", "PubMed"]
+model_hpo = ["gcn", "sgc", "sage"]
 partition_alpha_hpo = [0.1, 0.5, 1.0, 10.0]
 round_num_hpo = [1, 10, 20, 50, 100, 200]
 local_epoch_hpo = [1, 2, 5]
@@ -61,45 +63,50 @@ dropout_hpo = [0.1, 0.3, 0.5, 0.6]
 weight_decay_hpo = [0.001, 0.0001, 1e-5]
 
 run_id = 0
-for partition_alpha in partition_alpha_hpo:
-    for round_num in round_num_hpo:
-        for epoch in local_epoch_hpo:
-            for batch_size in batch_size_hpo:
-                for lr in lr_hpo:
-                    for hidden_dim in hidden_dim_hpo:
-                        for n_layers in n_layers_hpo:
-                            for dr in dropout_hpo:
-                                for weight_decay in weight_decay_hpo:
-                                    print(args.starting_run_id)
-                                    print(run_id)
-                                    if run_id < args.starting_run_id:
-                                        run_id += 1
-                                        continue
 
-                                    args.partition_alpha = partition_alpha
-                                    args.round_num = round_num
-                                    args.epoch = epoch
-                                    args.batch_size = batch_size
-                                    args.lr = lr
-                                    args.hidden_dim = hidden_dim
-                                    args.n_layers = n_layers
-                                    args.dr = dr
-                                    args.weight_decay = weight_decay
-                                    args.run_id = run_id
+for dataset in dataset_hpo:
+    for model in model_hpo:
+        for partition_alpha in partition_alpha_hpo:
+            for round_num in round_num_hpo:
+                for epoch in local_epoch_hpo:
+                    for batch_size in batch_size_hpo:
+                        for lr in lr_hpo:
+                            for hidden_dim in hidden_dim_hpo:
+                                for n_layers in n_layers_hpo:
+                                    for dr in dropout_hpo:
+                                        for weight_decay in weight_decay_hpo:
+                                            print(args.starting_run_id)
+                                            print(run_id)
+                                            if run_id < args.starting_run_id:
+                                                run_id += 1
+                                                continue
 
-                                    print(args)
-                                    # sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
-                                    os.system(
-                                        "nohup sh run_fed_node_clf.sh 10 10 1 1 gcn hetero {args.partition_alpha} {args.round_num} "
-                                        "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} cora "
-                                        "> ./fedgnn_rs_{args.run_id}.log 2>&1 &".format(
-                                            args=args
-                                        )
-                                    )
-                                    wait_for_the_training_process()
-                                    logging.info("cleaning the training...")
-                                    command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2}}')"
-                                    print(command)
-                                    os.system(command)
-                                    sleep(5)
-                                    run_id += 1
+                                            args.dataset = dataset
+                                            args.model = model
+                                            args.partition_alpha = partition_alpha
+                                            args.round_num = round_num
+                                            args.epoch = epoch
+                                            args.batch_size = batch_size
+                                            args.lr = lr
+                                            args.hidden_dim = hidden_dim
+                                            args.n_layers = n_layers
+                                            args.dr = dr
+                                            args.weight_decay = weight_decay
+                                            args.run_id = run_id
+
+                                            print(args)
+                                            # sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
+                                            os.system(
+                                                "nohup sh run_fed_node_clf.sh 10 10 1 1 {args.model} hetero {args.partition_alpha} {args.round_num} "
+                                                "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} {args.dataset} "
+                                                "> ./fedgnn_rs_{args.run_id}.log 2>&1 &".format(
+                                                    args=args
+                                                )
+                                            )
+                                            wait_for_the_training_process()
+                                            logging.info("cleaning the training...")
+                                            command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2}}')"
+                                            print(command)
+                                            os.system(command)
+                                            sleep(5)
+                                            run_id += 1
