@@ -138,10 +138,10 @@ def combine_category(graphs, category_split):
     for i in range(len(category_split)):
         ls = category_split[i]
         logging.info('combining subgraphs for ' + str(i) + 'client')
-        graph_new = ls[0]
+        graph_new = graphs[ls[0]]
         for i in range(1, len(ls)):
             logging.info('combined ' + str(i + 1) + 'subgraphs') 
-            graph_new = combine_subgraphs(graph_new, ls[i])
+            graph_new = combine_subgraphs(graph_new, graphs[ls[i]])
         combined_graph.append(graph_new)
     return combined_graph
 
