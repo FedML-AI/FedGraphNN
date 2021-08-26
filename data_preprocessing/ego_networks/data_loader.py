@@ -47,15 +47,15 @@ def create_random_split(path, data):
     return graphs_train, graphs_val, graphs_test
 
 
-def create_non_uniform_split(args, idxs, client_number, is_train=True, is_loading_cache=True):
+def create_non_uniform_split(args, idxs, client_number, data_type="train", is_loading_cache=True):
     logging.info("create_non_uniform_split------------------------------------------")
     N = len(idxs)
     alpha = args.partition_alpha
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
-    partition_cache_file_path = args.part_file + "-" + str(client_number) + "-" + str(alpha) + ".pkl"
+    partition_cache_file_path = args.part_file + "-" + str(client_number) + "-" + str(alpha) + "-" + data_type + ".pkl"
     logging.info("partition_cache_file_path = {}".format(partition_cache_file_path))
-    if is_loading_cache and os.path.isfile(partition_cache_file_path):
+    if is_loading_cache and os.path.exists(partition_cache_file_path):
         logging.info("loading preset partition")
         pickle_file = open(partition_cache_file_path, "rb")
         idx_batch_per_client = pickle.load(pickle_file)
@@ -86,7 +86,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True, is_loadin
     logging.info("create_non_uniform_split******************************************")
 
     # plot the (#client, #sample) distribution
-    if is_train:
+    if data_type == "train":
         logging.info(sample_num_distribution)
         plt.hist(sample_num_distribution)
         plt.title("Sample Number Distribution")
@@ -124,13 +124,13 @@ def partition_data_by_sample_size(
         clients_idxs_test = np.array_split(test_idxs, client_number)
     else:
         clients_idxs_train = create_non_uniform_split(
-            args, train_idxs, client_number, True
+            args, train_idxs, client_number, data_type="train"
         )
         clients_idxs_val = create_non_uniform_split(
-            args, val_idxs, client_number, False
+            args, val_idxs, client_number, data_type="val"
         )
         clients_idxs_test = create_non_uniform_split(
-            args, test_idxs, client_number, False
+            args, test_idxs, client_number, data_type="test"
         )
 
     labels_of_all_clients = []
