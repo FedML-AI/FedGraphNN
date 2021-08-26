@@ -56,6 +56,13 @@ def add_args(parser):
     )
 
     parser.add_argument(
+        "--part_file",
+        type=str,
+        default="./../../../data/ego-networks/partition.pickle",
+        help="File name for predefined partitions in pickle format",
+    )
+
+    parser.add_argument(
         "--ego_number", type=int, default=1000, help="Sampled ego nodes"
     )
 

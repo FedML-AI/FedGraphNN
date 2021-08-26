@@ -50,23 +50,30 @@ def create_random_split(path, data):
     return graphs_train, graphs_val, graphs_test
 
 
-def create_non_uniform_split(args, idxs, client_number, is_train=True):
+def create_non_uniform_split(args, idxs, client_number, is_train=True , is_loading_cache = True):
     logging.info("create_non_uniform_split------------------------------------------")
     N = len(idxs)
-    min_size = 0
     alpha = args.partition_alpha
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
-    while min_size < 1:
-        idx_batch_per_client = [[] for _ in range(client_number)]
-        (
-            idx_batch_per_client,
-            min_size,
-        ) = partition_class_samples_with_dirichlet_distribution(
-            N, alpha, client_number, idx_batch_per_client, idxs
-        )
-        logging.info("searching for min_size < 1")
+    if is_loading_cache:
+        pickle_file = open(args.part_file , "rb")
+        idx_batch_per_client = pickle.load(pickle_file)
+    else:
+        min_size = 0
+        while min_size < 1:
+            idx_batch_per_client = [[] for _ in range(client_number)]
+            (
+                idx_batch_per_client,
+                min_size,
+            ) = partition_class_samples_with_dirichlet_distribution(
+                N, alpha, client_number, idx_batch_per_client, idxs
+            )
+            logging.info("searching for min_size < 1")
+        with open(args.part_file , "wb") as handle:
+            pickle.dump(idx_batch_per_client, "handle")
     logging.info(idx_batch_per_client)
+
     sample_num_distribution = []
 
     for client_id in range(client_number):
@@ -87,6 +94,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True):
     #     fig_name = "x_hist.png"
     #     fig_dir = os.path.join("./visualization", fig_name)
     #     plt.savefig(fig_dir)
+
     return idx_batch_per_client
 
 
