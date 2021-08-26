@@ -58,7 +58,7 @@ def add_args(parser):
     parser.add_argument(
         "--part_file",
         type=str,
-        default="./../../../data/ego-networks/partition.pickle",
+        default="./../../../data/ego-networks/partition",
         help="File name for predefined partitions in pickle format",
     )
 

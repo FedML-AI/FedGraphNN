@@ -1,20 +1,17 @@
-import os
-import random
 import copy
 import logging
+import os
 import pickle
-import numpy as np
+import random
 
 import matplotlib.pyplot as plt
+import numpy as np
 import seaborn as sns
-
-from torch_geometric.datasets import Coauthor, CitationFull
 from torch_geometric.data import DataLoader
 
 from FedML.fedml_core.non_iid_partition.noniid_partition import (
     partition_class_samples_with_dirichlet_distribution,
 )
-
 from ..utils import DefaultCollator, WalkForestCollator
 
 
@@ -41,8 +38,8 @@ def create_random_split(path, data):
     )
 
     graphs_train = subgraphs[:train_size]
-    graphs_test = subgraphs[train_size : train_size + test_size]
-    graphs_val = subgraphs[train_size + test_size :]
+    graphs_test = subgraphs[train_size: train_size + test_size]
+    graphs_val = subgraphs[train_size + test_size:]
 
     # tranductive: train & test data are from the same subgraphs
     # TODO
@@ -50,15 +47,16 @@ def create_random_split(path, data):
     return graphs_train, graphs_val, graphs_test
 
 
-def create_non_uniform_split(args, idxs, client_number, is_train=True , is_loading_cache = True):
+def create_non_uniform_split(args, idxs, client_number, is_train=True, is_loading_cache=True):
     logging.info("create_non_uniform_split------------------------------------------")
     N = len(idxs)
     alpha = args.partition_alpha
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
-    if is_loading_cache and os.path.isfile(args.part_file):
+    partition_cache_file_path = args.part_file + "-" + str(client_number) + "-" + str(alpha) + ".pkl"
+    if is_loading_cache and os.path.isfile(partition_cache_file_path):
         logging.info("loading preset partition")
-        pickle_file = open(args.part_file , "rb")
+        pickle_file = open(partition_cache_file_path, "rb")
         idx_batch_per_client = pickle.load(pickle_file)
     else:
         min_size = 0
@@ -71,7 +69,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True , is_loadi
                 N, alpha, client_number, idx_batch_per_client, idxs
             )
             logging.info("searching for min_size < 1")
-        with open(args.part_file , "wb") as handle:
+        with open(partition_cache_file_path, "wb") as handle:
             pickle.dump(idx_batch_per_client, handle)
     logging.info("saving partition")
     logging.info(idx_batch_per_client)
@@ -87,21 +85,21 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True , is_loadi
     logging.info("create_non_uniform_split******************************************")
 
     # plot the (#client, #sample) distribution
-    # if is_train:
-    #     logging.info(sample_num_distribution)
-    #     plt.hist(sample_num_distribution)
-    #     plt.title("Sample Number Distribution")
-    #     plt.xlabel('number of samples')
-    #     plt.ylabel("number of clients")
-    #     fig_name = "x_hist.png"
-    #     fig_dir = os.path.join("./visualization", fig_name)
-    #     plt.savefig(fig_dir)
+    if is_train:
+        logging.info(sample_num_distribution)
+        plt.hist(sample_num_distribution)
+        plt.title("Sample Number Distribution")
+        plt.xlabel('number of samples')
+        plt.ylabel("number of clients")
+        fig_name = "x_hist.png"
+        fig_dir = os.path.join("./visualization", fig_name)
+        plt.savefig(fig_dir)
 
     return idx_batch_per_client
 
 
 def partition_data_by_sample_size(
-    args, path, client_number, uniform=True, compact=True
+        args, path, client_number, uniform=True, compact=True
 ):
     graphs_train, graphs_val, graphs_test = create_random_split(path, args.dataset)
 
@@ -218,14 +216,14 @@ def visualize_label_distribution_similarity_score(labels_of_all_clients):
 
 # Single process sequential
 def load_partition_data(
-    args,
-    path,
-    client_number,
-    uniform=True,
-    global_test=True,
-    compact=True,
-    normalize_features=False,
-    normalize_adj=False,
+        args,
+        path,
+        client_number,
+        uniform=True,
+        global_test=True,
+        compact=True,
+        normalize_features=False,
+        normalize_adj=False,
 ):
     global_data_dict, partition_dicts = partition_data_by_sample_size(
         args, path, client_number, uniform, compact=compact
