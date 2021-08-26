@@ -271,16 +271,25 @@ if __name__ == "__main__":
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-                        datefmt='%Y-%m-%d,%H:%M:%S')
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s",
+        datefmt="%Y-%m-%d,%H:%M:%S",
+    )
     logging.info(args)
 
     hostname = socket.gethostname()
-    logging.info("#############process ID = " + str(process_id) +
-                 ", host name = " + hostname + "########" +
-                 ", process ID = " + str(os.getpid()) +
-                 ", process Name = " + str(psutil.Process(os.getpid())))
+    logging.info(
+        "#############process ID = "
+        + str(process_id)
+        + ", host name = "
+        + hostname
+        + "########"
+        + ", process ID = "
+        + str(os.getpid())
+        + ", process Name = "
+        + str(psutil.Process(os.getpid()))
+    )
 
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
 
@@ -289,11 +298,11 @@ if __name__ == "__main__":
         wandb.init(
             project="fedmolecule",
             name="(sweep)FedGraphNN(d)"
-                 + str(args.model)
-                 + "r"
-                 + str(args.dataset)
-                 + "-lr"
-                 + str(args.lr),
+            + str(args.model)
+            + "r"
+            + str(args.dataset)
+            + "-lr"
+            + str(args.lr),
             config=args,
         )
 

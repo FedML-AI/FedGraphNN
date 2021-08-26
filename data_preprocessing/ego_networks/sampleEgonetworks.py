@@ -105,6 +105,7 @@ def get_data(path, data, ego_number, hop_number):
 
     return subgraphs, num_graphs, num_features, num_labels
 
+
 def set_seed(seed):
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False

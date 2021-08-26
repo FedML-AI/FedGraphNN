@@ -95,7 +95,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         return score, model
 
     def test_on_the_server(
-            self, train_data_local_dict, test_data_local_dict, device, args=None
+        self, train_data_local_dict, test_data_local_dict, device, args=None
     ) -> bool:
         logging.info("----------test_on_the_server--------")
 
@@ -121,7 +121,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
     def _compare_models(self, model_1, model_2):
         models_differ = 0
         for key_item_1, key_item_2 in zip(
-                model_1.state_dict().items(), model_2.state_dict().items()
+            model_1.state_dict().items(), model_2.state_dict().items()
         ):
             if torch.equal(key_item_1[1], key_item_2[1]):
                 pass

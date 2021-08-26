@@ -22,4 +22,4 @@ M5_BATCH_BOOTSTRAP=$WORKSPACE/experiments/distributed/recommender_system/docker/
 --env \
 M5_BATCH_ENTRY_SCRIPT=$WORKSPACE/experiments/distributed/recommender_system/docker/entry_script.sh \
 -u fedgraphnn --net=host \
-fedml/fedgraphnn:3.0
+fedml/fedgraphnn:5.0

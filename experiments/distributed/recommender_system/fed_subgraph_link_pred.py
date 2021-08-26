@@ -265,11 +265,11 @@ if __name__ == "__main__":
             # project="federated_nas",
             project="fedmolecule",
             name="(Sweep) FedGraphNN(d)"
-                 + str(args.model)
-                 + "r"
-                 + str(args.dataset)
-                 + "-lr"
-                 + str(args.lr),
+            + str(args.model)
+            + "r"
+            + str(args.dataset)
+            + "-lr"
+            + str(args.lr),
             config=args,
         )
 

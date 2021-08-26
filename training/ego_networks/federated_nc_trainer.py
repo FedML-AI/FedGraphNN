@@ -57,7 +57,7 @@ class FedNodeClfTrainer(ModelTrainer):
 
         with torch.no_grad():
             for batch_index, batch in enumerate(test_data):
-                logging.info("batch_index = {}. batch = {}.".format(batch_index, batch))
+                # logging.info("batch_index = {}. batch = {}.".format(batch_index, batch))
                 batch.to(device)
 
                 pred = model(batch)

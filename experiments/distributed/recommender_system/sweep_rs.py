@@ -92,9 +92,15 @@ for client_num in client_num_hpo:
                                             args.n_layers = n_layers
                                             args.dr = dr
                                             args.run_id = run_id
-                                            if args.dataset == "ciao" and args.client_num == 28:
+                                            if (
+                                                args.dataset == "ciao"
+                                                and args.client_num == 28
+                                            ):
                                                 args.client_num = 28
-                                            elif args.dataset == "epinions" and args.client_num == 28:
+                                            elif (
+                                                args.dataset == "epinions"
+                                                and args.client_num == 28
+                                            ):
                                                 args.client_num = 27
 
                                             print(args)

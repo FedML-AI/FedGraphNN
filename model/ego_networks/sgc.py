@@ -7,7 +7,8 @@ class SGCNodeCLF(torch.nn.Module):
     def __init__(self, in_dim, num_classes, K):
         super(SGCNodeCLF, self).__init__()
         self.conv1 = SGConv(in_dim, num_classes, K)
-        self.nclass= num_classes
+        self.nclass = num_classes
+
     def forward(self, inp):
         x, edge_index = inp.x, inp.edge_index
         x = self.conv1(x, edge_index)

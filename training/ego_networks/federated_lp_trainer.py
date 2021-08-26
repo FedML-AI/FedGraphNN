@@ -80,7 +80,7 @@ class FedLinkPredTrainer(ModelTrainer):
             #     acc_v, _ = self.test(val_data, device)
 
             if ((idx_batch + 1) % args.frequency_of_the_test == 0) or (
-                    idx_batch == len(train_data) - 1
+                idx_batch == len(train_data) - 1
             ):
                 if test_data is not None:
                     test_score, _ = self.test(self.test_data, device)
@@ -120,7 +120,7 @@ class FedLinkPredTrainer(ModelTrainer):
         return cum_score / ngraphs, model
 
     def test_on_the_server(
-            self, train_data_local_dict, test_data_local_dict, device, args=None
+        self, train_data_local_dict, test_data_local_dict, device, args=None
     ) -> bool:
         logging.info("----------test_on_the_server--------")
 
@@ -146,7 +146,7 @@ class FedLinkPredTrainer(ModelTrainer):
     def _compare_models(self, model_1, model_2):
         models_differ = 0
         for key_item_1, key_item_2 in zip(
-                model_1.state_dict().items(), model_2.state_dict().items()
+            model_1.state_dict().items(), model_2.state_dict().items()
         ):
             if torch.equal(key_item_1[1], key_item_2[1]):
                 pass
