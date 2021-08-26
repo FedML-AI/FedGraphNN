@@ -56,7 +56,8 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True , is_loadi
     alpha = args.partition_alpha
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
-    if is_loading_cache:
+    if is_loading_cache and os.path.isfile(args.part_file):
+        logging.info("loading preset partition")
         pickle_file = open(args.part_file , "rb")
         idx_batch_per_client = pickle.load(pickle_file)
     else:
@@ -71,7 +72,8 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True , is_loadi
             )
             logging.info("searching for min_size < 1")
         with open(args.part_file , "wb") as handle:
-            pickle.dump(idx_batch_per_client, "handle")
+            pickle.dump(idx_batch_per_client, handle)
+    logging.info("saving partition")
     logging.info(idx_batch_per_client)
 
     sample_num_distribution = []
