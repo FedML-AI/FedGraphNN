@@ -52,15 +52,15 @@ os.system(command)
 
 dataset_hpo = ["cora", "citeseer", "DBLP", "PubMed"]
 model_hpo = ["gcn", "sgc", "sage"]
-partition_alpha_hpo = [0.1, 0.5, 1.0, 10.0]
-round_num_hpo = [1, 10, 20, 50, 100, 200]
-local_epoch_hpo = [1, 2, 5]
+partition_alpha_hpo = [0.1, 10.0]
+round_num_hpo = [100]
+local_epoch_hpo = [1, 5]
 batch_size_hpo = [1]
-lr_hpo = [0.1, 0.01, 0.001, 0.0001]
+lr_hpo = [0.1, 0.01, 0.001]
 hidden_dim_hpo = [32, 64, 128]
-n_layers_hpo = [3, 5, 8, 10]
-dropout_hpo = [0.1, 0.3, 0.5, 0.6]
-weight_decay_hpo = [0.001, 0.0001, 1e-5]
+n_layers_hpo = [3, 5]
+dropout_hpo = [0.5]
+weight_decay_hpo = [0.0001, 1e-5]
 
 run_id = 0
 

@@ -300,7 +300,7 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
-            name="(sweeping) FedGraphNN(d)"
+            name="(ego) FedGraphNN(d)"
             + str(args.model)
             + "r"
             + str(args.dataset)

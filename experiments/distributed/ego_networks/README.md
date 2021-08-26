@@ -56,22 +56,22 @@ cd $WORKSPACE/experiments/distributed/ego_networks
 
 # for citation network (cora, citeseer, pubmed, dblp), we allow each FL client to have heterogenous number of ego networks.
 # gcn model
-sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 cora
-sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 citeseer
-sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 DBLP
-sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 PubMed
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 cora
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 citeseer
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 DBLP
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 PubMed
 
 # sgc model
-sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 cora
-sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 citeseer
-sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 DBLP
-sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 PubMed
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 cora
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 citeseer
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 DBLP
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 PubMed
 
 # sage
-sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 cora
-sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 citeseer
-sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 DBLP
-sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 PubMed
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 cora
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 citeseer
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 DBLP
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 PubMed
 
 # for co-author dataset (CS, Physics), we view each author as a FL client.
 sh run_fed_node_clf.sh 8 8 1 1 gcn homo 0.5 100 1 32 0.1 1 3 0.3 0.0001 CS
