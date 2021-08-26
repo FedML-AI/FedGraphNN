@@ -21,7 +21,8 @@ def MRR(rs):
         Mean reciprocal rank
     """
     rs = (np.asarray(r).nonzero()[0] for r in rs)
-    return np.mean([1. / (r[0] + 1) if r.size else 0. for r in rs])
+    return np.mean([1.0 / (r[0] + 1) if r.size else 0.0 for r in rs])
+
 
 def hit_ratio_at_k(rs, k):
     assert k >= 1

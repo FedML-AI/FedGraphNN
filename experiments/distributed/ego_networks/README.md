@@ -5,6 +5,8 @@
 
 
 For each dataset, ego-networks needs to be sampled first.  
+
+citation networks: e.g. "cora", "citeseer", "DBLP", "PubMed"
 ```
 WORKSPACE=/home/$USER/FedGraphNN
 # WORKSPACE=/Users/chaoyanghe/sourcecode/FedGraphNN
@@ -45,13 +47,6 @@ This is an ordered list of arguments used in distributed/federated experiments. 
 
 #### Datasets to Preprocess
 
-citation networks (# nodes): e.g. DBLP (17716), Cora (2708), CiteSeer (3327), PubMed (19717)
-
-collaboration networks (# nodes): e.g. CS (18333), Physics (34493)
- 
-social networks (# ego-networks): e.g. COLLAB, IMDB, DEEZER_EGO_NETS (9629), TWITCH_EGOS (127094)
-
-
 ## Experiments 
 
 ### Distributed/Federated Node Classification experiments
@@ -60,15 +55,30 @@ WORKSPACE=/home/$USER/FedGraphNN
 cd $WORKSPACE/experiments/distributed/ego_networks
 
 # for citation network (cora, citeseer, pubmed, dblp), we allow each FL client to have heterogenous number of ego networks.
-sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
+# gcn model
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 cora
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 citeseer
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 DBLP
+sh run_fed_node_clf.sh 10 10 1 8 gcn hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 PubMed
+
+# sgc model
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 cora
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 citeseer
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 DBLP
+sh run_fed_node_clf.sh 10 10 1 8 sgc hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 PubMed
+
+# sage
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 cora
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 citeseer
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 DBLP
+sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 32 0.0015 1 3 0.3 0.0001 PubMed
 
 # for co-author dataset (CS, Physics), we view each author as a FL client.
-sh run_fed_node_clf.sh 8 8 1 1 gcn homo 0.5 100 1 32 0.1 1 3 0.3 CS
+sh run_fed_node_clf.sh 8 8 1 1 gcn homo 0.5 100 1 32 0.1 1 3 0.3 0.0001 CS
 ```
 
-### Distributed/Federated Link Prediction experiments
+
+### Sweeping
 ```
-WORKSPACE=/home/$USER/FedGraphNN
-cd $WORKSPACE/experiments/distributed/ego_networks
-sh run_fed_link_pred.sh 4 4 1 1 gcn hetero 0.5 20 1 32 0.0015 32 3 0.3 CS
+nohup python3 sweep_ego.py --starting_run_id 0 > sweeping.log 2>&1 &
 ```

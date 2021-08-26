@@ -9,7 +9,8 @@ class Net(torch.nn.Module):
         self.dropout = dropout
         self.conv1 = GATConv(in_channels, heads, heads= heads)
         # On the Pubmed dataset, use heads=8 in conv2.
-        self.conv2 = GATConv(heads**2, out_channels, heads=1, concat=False)
+        self.conv2 = GATConv(8 * 8, out_channels, heads=1, concat=False, dropout=0.6)
+
     def forward(self, x, edge_index):
         
         x = F.elu(self.conv1(x, edge_index))

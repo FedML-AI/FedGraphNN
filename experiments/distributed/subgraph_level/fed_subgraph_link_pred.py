@@ -17,7 +17,12 @@ from training.subgraph_level.fed_subgraph_lp_trainer import FedSubgraphLPTrainer
 
 from FedML.fedml_api.distributed.fedavg.FedAvgAPI import FedML_init
 
-from experiments.distributed.initializer import add_federated_args, get_fl_algorithm_initializer, set_seed
+from experiments.distributed.initializer import (
+    add_federated_args,
+    get_fl_algorithm_initializer,
+    set_seed,
+)
+
 
 def add_args(parser):
     """
@@ -25,56 +30,113 @@ def add_args(parser):
     return a parser added with args required by fit
     """
     # Training settings
-    parser.add_argument('--model', type=str, default='gcn', metavar='N',
-                        help='neural network used in training')
+    parser.add_argument(
+        "--model",
+        type=str,
+        default="gcn",
+        metavar="N",
+        help="neural network used in training",
+    )
 
-    parser.add_argument('--dataset', type=str, default='Cora', metavar='N',
-                        help='dataset used for training')
+    parser.add_argument(
+        "--dataset",
+        type=str,
+        default="Cora",
+        metavar="N",
+        help="dataset used for training",
+    )
 
-    parser.add_argument('--data_dir', type=str, default='./../../../data/subgraph_level/',
-                        help='data directory')
+    parser.add_argument(
+        "--data_dir",
+        type=str,
+        default="./../../../data/subgraph_level/",
+        help="data directory",
+    )
 
-    parser.add_argument('--ego_number', type=int, default=10,
-                        help='Sampled ego nodes')
-                
-    parser.add_argument('--hop_number', type=int, default=2,
-                        help='Number of hops')
+    parser.add_argument("--ego_number", type=int, default=10, help="Sampled ego nodes")
 
-    parser.add_argument('--normalize_features', type=bool, default=False, help='Whether or not to symmetrically normalize feat matrices')
+    parser.add_argument("--hop_number", type=int, default=2, help="Number of hops")
 
-    parser.add_argument('--normalize_adjacency', type=bool, default=False, help='Whether or not to symmetrically normalize adj matrices')
+    parser.add_argument(
+        "--normalize_features",
+        type=bool,
+        default=False,
+        help="Whether or not to symmetrically normalize feat matrices",
+    )
 
-    parser.add_argument('--sparse_adjacency', type=bool, default=False, help='Whether or not the adj matrix is to be processed as a sparse matrix')
+    parser.add_argument(
+        "--normalize_adjacency",
+        type=bool,
+        default=False,
+        help="Whether or not to symmetrically normalize adj matrices",
+    )
 
-    parser.add_argument('--batch_size', type=int, default=64, metavar='N',
-                        help='input batch size for training (default: 64)')
+    parser.add_argument(
+        "--sparse_adjacency",
+        type=bool,
+        default=False,
+        help="Whether or not the adj matrix is to be processed as a sparse matrix",
+    )
+
+    parser.add_argument(
+        "--batch_size",
+        type=int,
+        default=64,
+        metavar="N",
+        help="input batch size for training (default: 64)",
+    )
 
     # model related
-    parser.add_argument('--hidden_size', type=int, default=32, help='Size of GraphSAGE hidden layer')
+    parser.add_argument(
+        "--hidden_size", type=int, default=32, help="Size of GraphSAGE hidden layer"
+    )
 
-    parser.add_argument('--n_layers', type=int, default=5, help='Number of GraphSAGE hidden layers')
+    parser.add_argument(
+        "--n_layers", type=int, default=5, help="Number of GraphSAGE hidden layers"
+    )
 
-    parser.add_argument('--node_embedding_dim', type=int, default=32,
-                        help='Dimensionality of the vector space the atoms will be embedded in')
+    parser.add_argument(
+        "--node_embedding_dim",
+        type=int,
+        default=32,
+        help="Dimensionality of the vector space the atoms will be embedded in",
+    )
 
-    parser.add_argument('--alpha', type=float, default=0.2, help='Alpha value for LeakyRelu used in GAT')
+    parser.add_argument(
+        "--alpha", type=float, default=0.2, help="Alpha value for LeakyRelu used in GAT"
+    )
 
-    parser.add_argument('--num_heads', type=int, default=2, help='Number of attention heads used in GAT')
+    parser.add_argument(
+        "--num_heads", type=int, default=2, help="Number of attention heads used in GAT"
+    )
 
-    parser.add_argument('--eps', type=int, default=0, help='Epsilon parameter used in GIN')
+    parser.add_argument(
+        "--eps", type=int, default=0, help="Epsilon parameter used in GIN"
+    )
 
-    parser.add_argument('--dropout', type=float, default=0.3, help='Dropout used between GraphSAGE layers')
+    parser.add_argument(
+        "--dropout",
+        type=float,
+        default=0.3,
+        help="Dropout used between GraphSAGE layers",
+    )
 
-    parser.add_argument('--graph_embedding_dim', type=int, default=64,
-                        help='Dimensionality of the vector space the molecule will be embedded in')
+    parser.add_argument(
+        "--graph_embedding_dim",
+        type=int,
+        default=64,
+        help="Dimensionality of the vector space the molecule will be embedded in",
+    )
 
-    parser.add_argument('--wd', help='weight decay parameter;', type=float, default=0.001)
+    parser.add_argument(
+        "--wd", help="weight decay parameter;", type=float, default=0.001
+    )
 
-    parser.add_argument('--gpu_server_num', type=int, default=1,
-                        help='gpu_server_num')
+    parser.add_argument("--gpu_server_num", type=int, default=1, help="gpu_server_num")
 
-    parser.add_argument('--gpu_num_per_server', type=int, default=4,
-                        help='gpu_num_per_server')
+    parser.add_argument(
+        "--gpu_num_per_server", type=int, default=4, help="gpu_num_per_server"
+    )
 
     parser = add_federated_args(parser)
     args = parser.parse_args()
@@ -82,40 +144,64 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    if args.dataset not in ["YAGO3-10", "wn18rr", "FB15k-237" ]:
-        raise Exception("no such dataset!")    
+    if args.dataset not in ["YAGO3-10", "wn18rr", "FB15k-237"]:
+        raise Exception("no such dataset!")
 
-    args.part_algo = 'Louvain'
+    args.part_algo = "Louvain"
     args.pred_task = "relation"
-    compact = (args.model == 'graphsage')
+    compact = args.model == "graphsage"
 
     args.metric = "AP"
 
-    g1, _ , _  = get_data_community(args.data_dir, args.dataset, args.pred_task)
+    g1, _, _ = get_data_community(args.data_dir, args.dataset, args.pred_task)
     print(g1[0])
     unif = True if args.partition_method == "homo" else False
 
-    if args.model == 'gcn':
+    if args.model == "gcn":
         args.normalize_features = True
         args.normalize_adjacency = True
 
-    train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
-    data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
+    (
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+    ) = load_partition_data(
         args,
         args.data_dir,
         args.client_num_in_total,
-        uniform=unif, compact=compact, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
+        uniform=unif,
+        compact=compact,
+        normalize_features=args.normalize_features,
+        normalize_adj=args.normalize_adjacency,
+    )
 
-    dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
-               data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict]
+    dataset = [
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+    ]
 
     return dataset
 
 
 def create_model(args, model_name):
     logging.info("create_model. model_name = %s" % (model_name))
-    if model_name == 'gcn':
-        model = GCNLinkPred(64,64)
+    if model_name == "gcn":
+        model = GCNLinkPred(64, 64)
     else:
         raise Exception("such model does not exist !")
     trainer = FedSubgraphLPTrainer(model)
@@ -135,7 +221,11 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
         process_gpu_dict[client_index] = gpu_index
 
     logging.info(process_gpu_dict)
-    device = torch.device("cuda:" + str(process_gpu_dict[process_ID - 1]) if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        "cuda:" + str(process_gpu_dict[process_ID - 1])
+        if torch.cuda.is_available()
+        else "cpu"
+    )
     logging.info(device)
     return device
 
@@ -147,33 +237,42 @@ def post_complete_message_to_sweep_process(args):
         os.mkfifo(pipe_path)
     pipe_fd = os.open(pipe_path, os.O_WRONLY)
 
-    with os.fdopen(pipe_fd, 'w') as pipe:
+    with os.fdopen(pipe_fd, "w") as pipe:
         pipe.write("training is finished! \n%s" % (str(args)))
 
 
 if __name__ == "__main__":
-#     # initialize distributed computing (MPI)
+    #     # initialize distributed computing (MPI)
     comm, process_id, worker_number = FedML_init()
 
-#     # parse python script input parameters
+    #     # parse python script input parameters
     parser = argparse.ArgumentParser()
     args = add_args(parser)
 
-#     # customize the process name
+    #     # customize the process name
     str_process_name = "FedGraphNN:" + str(process_id)
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-                        datefmt='%Y-%m-%d,%H:%M:%S')
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s",
+        datefmt="%Y-%m-%d,%H:%M:%S",
+    )
     logging.info(args)
 
     hostname = socket.gethostname()
-    logging.info("#############process ID = " + str(process_id) +
-                 ", host name = " + hostname + "########" +
-                 ", process ID = " + str(os.getpid()) +
-                 ", process Name = " + str(psutil.Process(os.getpid())))
+    logging.info(
+        "#############process ID = "
+        + str(process_id)
+        + ", host name = "
+        + hostname
+        + "########"
+        + ", process ID = "
+        + str(os.getpid())
+        + ", process Name = "
+        + str(psutil.Process(os.getpid()))
+    )
 
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
 
@@ -182,8 +281,13 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
-            name="FedGraphNN(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
-            config=args
+            name="FedGraphNN(d)"
+            + str(args.model)
+            + "r"
+            + str(args.dataset)
+            + "-lr"
+            + str(args.lr),
+            config=args,
         )
 
     # Set the random seed. The np.random seed determines the dataset partition.
@@ -200,16 +304,27 @@ if __name__ == "__main__":
     # machine 3: worker2, worker6;
     # machine 4: worker3, worker7;
     # Therefore, we can see that workers are assigned according to the order of machine list.
-    #logging.info("process_id = %d, size = %d" % (process_id, worker_number))
-    device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
+    # logging.info("process_id = %d, size = %d" % (process_id, worker_number))
+    device = init_training_device(
+        process_id, worker_number - 1, args.gpu_num_per_server
+    )
 
     # load data
     dataset = load_data(args, args.dataset)
-    [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
-     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict] = dataset
-    
-   
-    logging.info("Dataset Processed" )
+    [
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+    ] = dataset
+
+    logging.info("Dataset Processed")
 
     # # create model.
     # # Note if the model is DNN (e.g., ResNet), the training will be very slow.
@@ -218,10 +333,21 @@ if __name__ == "__main__":
 
     # # start "federated averaging (FedAvg)"
     fl_alg = get_fl_algorithm_initializer(args.fl_algorithm)
-    fl_alg(process_id, worker_number, device, comm,
-                             model, train_data_num, train_data_global, test_data_global,
-                             data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
-                             trainer)
+    fl_alg(
+        process_id,
+        worker_number,
+        device,
+        comm,
+        model,
+        train_data_num,
+        train_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        test_data_local_dict,
+        args,
+        trainer,
+    )
 
     if process_id == 0:
         post_complete_message_to_sweep_process(args)

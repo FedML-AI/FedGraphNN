@@ -4,22 +4,22 @@ from torch_geometric.nn import GCNConv
 
 
 class GCNNodeCLF(torch.nn.Module):
-    def __init__(self, nfeat, nhid, nclass, nlayer , dropout):
+    def __init__(self, nfeat, nhid, nclass, nlayer, dropout):
         super(GCNNodeCLF, self).__init__()
         self.num_layers = nlayer
         self.dropout = dropout
-        self.nclass= nclass
+        self.nclass = nclass
 
         self.pre = torch.nn.Sequential(torch.nn.Linear(nfeat, nhid))
 
         self.graph_convs = torch.nn.ModuleList()
-    
+
         for l in range(nlayer - 1):
-            self.graph_convs.append(GCNConv(nhid,nhid))
+            self.graph_convs.append(GCNConv(nhid, nhid))
 
         self.post = torch.nn.Sequential(torch.nn.Linear(nhid, nclass))
 
-    def forward(self,data):
+    def forward(self, data):
         x, edge_index = data.x, data.edge_index
         x = self.pre(x)
         for i in range(len(self.graph_convs)):

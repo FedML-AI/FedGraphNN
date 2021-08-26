@@ -3,15 +3,15 @@ import logging
 import numpy as np
 import torch
 import wandb
-from sklearn.metrics import f1_score, confusion_matrix
+from sklearn.metrics import confusion_matrix
 
 from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
 
 # Trainer for MoleculeNet. The evaluation metric is ROC-AUC
 
-class FedNodeClfTrainer(ModelTrainer):
 
+class FedNodeClfTrainer(ModelTrainer):
     def get_model_params(self):
         return self.model.cpu().state_dict()
 
@@ -26,9 +26,13 @@ class FedNodeClfTrainer(ModelTrainer):
         model.train()
 
         if args.client_optimizer == "sgd":
-            optimizer = torch.optim.SGD(model.parameters(), lr=args.lr, weight_decay=args.wd)
+            optimizer = torch.optim.SGD(
+                model.parameters(), lr=args.lr, weight_decay=args.wd
+            )
         else:
-            optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+            optimizer = torch.optim.Adam(
+                model.parameters(), lr=args.lr, weight_decay=args.wd
+            )
 
         max_test_score, max_val_score = 0, 0
         best_model_params = {}
@@ -58,8 +62,11 @@ class FedNodeClfTrainer(ModelTrainer):
 
                 pred = model(batch)
                 label = batch.y
-                cm_result = confusion_matrix(label.cpu().numpy().flatten(), pred.argmax(dim=1).cpu().numpy().flatten(),
-                                             labels=np.arange(0, self.model.nclass))
+                cm_result = confusion_matrix(
+                    label.cpu().numpy().flatten(),
+                    pred.argmax(dim=1).cpu().numpy().flatten(),
+                    labels=np.arange(0, self.model.nclass),
+                )
                 conf_mat += cm_result
 
         # logging.info("conf_mat = {}".format(conf_mat))
@@ -81,7 +88,9 @@ class FedNodeClfTrainer(ModelTrainer):
         logging.info("score = {}".format(micro_F1))
         return micro_F1, model
 
-    def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
+    def test_on_the_server(
+        self, train_data_local_dict, test_data_local_dict, device, args=None
+    ) -> bool:
         logging.info("----------test_on_the_server--------")
 
         model_list, micro_list, macro_list = [], [], []
@@ -92,25 +101,27 @@ class FedNodeClfTrainer(ModelTrainer):
                 self._compare_models(model, model_list[idx])
             model_list.append(model)
             micro_list.append(score)
-            logging.info('Client {}, Test Micro F1 = {}'.format(client_idx, score))
+            logging.info("Client {}, Test Micro F1 = {}".format(client_idx, score))
             wandb.log({"Client {} Test/Micro F1".format(client_idx): score})
 
         avg_micro = np.mean(np.array(micro_list))
-        logging.info('Test Micro F1 = {}'.format(avg_micro))
+        logging.info("Test Micro F1 = {}".format(avg_micro))
         wandb.log({"Test/ Micro F1": avg_micro})
 
         return True
 
     def _compare_models(self, model_1, model_2):
         models_differ = 0
-        for key_item_1, key_item_2 in zip(model_1.state_dict().items(), model_2.state_dict().items()):
+        for key_item_1, key_item_2 in zip(
+            model_1.state_dict().items(), model_2.state_dict().items()
+        ):
             if torch.equal(key_item_1[1], key_item_2[1]):
                 pass
             else:
                 models_differ += 1
                 if key_item_1[0] == key_item_2[0]:
-                    logging.info('Mismatch found at', key_item_1[0])
+                    logging.info("Mismatch found at", key_item_1[0])
                 else:
                     raise Exception
         if models_differ == 0:
-            logging.info('Models match perfectly! :)')
+            logging.info("Models match perfectly! :)")
