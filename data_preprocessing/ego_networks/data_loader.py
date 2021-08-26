@@ -54,6 +54,7 @@ def create_non_uniform_split(args, idxs, client_number, is_train=True, is_loadin
     logging.info("sample number = %d, client_number = %d" % (N, client_number))
     logging.info(idxs)
     partition_cache_file_path = args.part_file + "-" + str(client_number) + "-" + str(alpha) + ".pkl"
+    logging.info("partition_cache_file_path = {}".format(partition_cache_file_path))
     if is_loading_cache and os.path.isfile(partition_cache_file_path):
         logging.info("loading preset partition")
         pickle_file = open(partition_cache_file_path, "rb")
