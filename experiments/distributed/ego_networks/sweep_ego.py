@@ -99,7 +99,7 @@ for dataset in dataset_hpo:
                                             os.system(
                                                 "nohup sh run_fed_node_clf.sh 10 10 1 1 {args.model} hetero {args.partition_alpha} {args.round_num} "
                                                 "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} {args.dataset} "
-                                                "> ./fedgnn_rs_{args.run_id}.log 2>&1 &".format(
+                                                "> ./fedgnn_ego_{args.run_id}.log 2>&1 &".format(
                                                     args=args
                                                 )
                                             )

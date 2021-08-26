@@ -80,5 +80,8 @@ sh run_fed_node_clf.sh 8 8 1 1 gcn homo 0.5 100 1 32 0.1 1 3 0.3 0.0001 CS
 
 ### Sweeping
 ```
+# change id to your own
+wandb login ee0b5f53d949c84cee7decbe7a629e63fb2f8408
+wandb on
 nohup python3 sweep_ego.py --starting_run_id 0 > sweeping.log 2>&1 &
 ```

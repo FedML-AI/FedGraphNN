@@ -101,6 +101,7 @@ RUN pip3 install mpi4py \
     streamlit \
     matplotlib \
     setproctitle \
+    seaborn \
     certifi==2020.6.20 \
     chardet==3.0.4 \
     et-xmlfile==1.0.1 \
@@ -115,6 +116,14 @@ RUN pip3 install mpi4py \
     paho-mqtt==1.5.0 \
     Celery==4.4.7 \
     dill==0.3.3
+
+
+##############################################################################
+# PyTorch (latest version: v1.9.0)
+##############################################################################
+RUN sudo pip3 install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions future six requests dataclasses h5py
+RUN sudo pip3 install torch==1.9.0+cu111 torchvision==0.10.0+cu111 torchaudio==0.9.0 -f https://download.pytorch.org/whl/torch_stable.html
+
 
 ##############################################################################
 # install torch-geometric (https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
@@ -145,12 +154,6 @@ ENV HOME /home/$USER
 RUN echo $HOME
 RUN sudo pip install supervisor
 
-
-##############################################################################
-# PyTorch (latest version: v1.9.0)
-##############################################################################
-RUN sudo pip3 install numpy ninja pyyaml mkl mkl-include setuptools cmake cffi typing_extensions future six requests dataclasses h5py
-RUN sudo pip3 install torch torchvision torchaudio
 
 ##############################################################################
 # SSH Setup
