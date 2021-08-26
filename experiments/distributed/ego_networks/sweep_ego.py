@@ -97,7 +97,7 @@ for dataset in dataset_hpo:
                                             print(args)
                                             # sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
                                             os.system(
-                                                "nohup sh run_fed_node_clf.sh 10 10 1 1 {args.model} hetero {args.partition_alpha} {args.round_num} "
+                                                "nohup sh run_fed_node_clf.sh 10 10 1 8 {args.model} hetero {args.partition_alpha} {args.round_num} "
                                                 "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} {args.dataset} "
                                                 "> ./fedgnn_ego_{args.run_id}.log 2>&1 &".format(
                                                     args=args

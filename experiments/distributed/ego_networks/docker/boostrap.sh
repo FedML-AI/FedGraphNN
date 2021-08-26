@@ -8,3 +8,4 @@ echo "------------python3 -c import torch; print(torch.__version__)------------"
 python3 -c "import torch; print(torch.__version__)"
 echo "------------python3 -c import torch;print(torch.cuda.nccl.version())------------"
 python3 -c "import torch;print(torch.cuda.nccl.version())"
+
