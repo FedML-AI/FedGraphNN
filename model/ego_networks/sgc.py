@@ -12,3 +12,6 @@ class SGCNodeCLF(torch.nn.Module):
         x, edge_index = inp.x, inp.edge_index
         x = self.conv1(x, edge_index)
         return F.log_softmax(x, dim=1)
+
+    def loss(self, pred, label):
+        return F.nll_loss(pred, label)
