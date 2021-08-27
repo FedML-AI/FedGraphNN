@@ -161,6 +161,11 @@ def get_data_category(args, path, data, load_processed=True):
     if load_processed:
         with open(os.path.join(path, data, "subgraphs.pkl"), "rb") as f:
             graphs = pickle.load(f)
+
+    elif args.client_num_in_total == 1:
+        with open(os.path.join(path, data, 'graph.pkl'), "rb") as f:
+            graphs = pickle.load(f)
+
     else:
 
         logging.info("read mapping")
