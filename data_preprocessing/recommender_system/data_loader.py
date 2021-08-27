@@ -115,8 +115,6 @@ def _subgraphing(g, partion, mapping_item2category):
         if len(nodes) < 2:
             continue
         graph = nx.subgraph(g, nodes)
-        Gcc = sorted(nx.connected_components(graph), key=len, reverse=True)
-        G0 = graph.subgraph(Gcc[0])
         graphs.append(from_networkx(grpah))
     return graphs
 
