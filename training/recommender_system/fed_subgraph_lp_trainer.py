@@ -128,7 +128,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         mse_score = np.mean(np.array(mse_list))
 
         logging.info(
-                "Test {} = {}, mae = {}, rmse = {}, mse = {}".format(client_idx, args.metric, avg_score, mae_score, rmse_score, mse_score)
+                "Test {} = {}, mae = {}, rmse = {}, mse = {}".format(args.metric, avg_score, mae_score, rmse_score, mse_score)
             )
         wandb.log({"Client {} Test/{}".format(client_idx, args.metric): avg_score,
             "MAE, RMSE, MSE = ": [mae_score, rmse_score, mse_score]})
