@@ -27,6 +27,9 @@ def create_random_split(path, data):
     subgraphs, _, _, _ = get_data(path, data)
 
     # inductive: train & test data are from different subgraphs
+    random.seed(123)
+    np.random.seed(123)
+    
     random.shuffle(subgraphs)
     train_size = int(len(subgraphs) * 0.8)
     val_size = int(len(subgraphs) * 0.1)
