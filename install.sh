@@ -9,9 +9,9 @@ conda install scikit-learn numpy h5py setproctitle networkx
 pip install -r requirements.txt
 
 # install torch-geometric (https://pytorch-geometric.readthedocs.io/en/latest/notes/installation.html)
-pip install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html &&
-pip install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html &&
-pip install torch-geometric
+pip3 install torch-scatter -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html &&
+pip3 install torch-sparse -f https://pytorch-geometric.com/whl/torch-1.9.0+cu111.html &&
+pip3 install torch-geometric
 
 # install FedML git submodule
 cd FedML; git submodule init; git submodule update; cd ../;
