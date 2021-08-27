@@ -112,6 +112,9 @@ def partition_data_by_sample_size(
     val_idxs = list(range(num_val_samples))
     test_idxs = list(range(num_test_samples))
 
+    random.seed(123)
+    np.random.seed(123)
+
     random.shuffle(train_idxs)
     random.shuffle(val_idxs)
     random.shuffle(test_idxs)
