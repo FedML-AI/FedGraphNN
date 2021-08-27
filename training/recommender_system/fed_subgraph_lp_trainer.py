@@ -77,7 +77,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
         model.eval()
         model.to(device)
         metric = metric
-        mae, rmse, mape = [], [], []
+        mae, rmse, mse = [], [], []
 
         for batch in test_data:
             batch.to(device)
@@ -95,18 +95,18 @@ class FedSubgraphLPTrainer(ModelTrainer):
                 score = metric(link_labels.cpu(), link_logits.cpu())
                 mae.append(mean_absolute_error(link_labels.cpu(), link_logits.cpu()))
                 rmse.append(mean_squared_error(link_labels.cpu(), link_logits.cpu(), squared = False))
-                mape.append(mean_absolute_percentage_error(link_labels.cpu(), link_logits.cpu()))
-        return score, model, mae, rmse, mape
+                mse.append(mean_absolute_percentage_error(link_labels.cpu(), link_logits.cpu()))
+        return score, model, mae, rmse, mse
 
     def test_on_the_server(
         self, train_data_local_dict, test_data_local_dict, device, args=None
     ) -> bool:
         logging.info("----------test_on_the_server--------")
 
-        model_list, score_list, mae_list, rmse_list, mape_list = [], [], [], [], []
+        model_list, score_list, mae_list, rmse_list, mse_list = [], [], [], [], []
         for client_idx in test_data_local_dict.keys():
             test_data = test_data_local_dict[client_idx]
-            score, model, mae, rmse, mape = self.test(test_data, device, val=False)
+            score, model, mae, rmse, mse = self.test(test_data, device, val=False)
 
             for idx in range(len(model_list)):
                 self._compare_models(model, model_list[idx])
@@ -114,24 +114,24 @@ class FedSubgraphLPTrainer(ModelTrainer):
             score_list.append(score)
             mae_list.append(mae)
             rmse_list.append(rmse)
-            mape_list.append(mape)
+            mse_list.append(mse)
 
             logging.info(
-                "Client {}, Test {} = {}, mae = {}, rmse = {}, mape = {}".format(client_idx, args.metric, score, mae, rmse, mape)
+                "Client {}, Test {} = {}, mae = {}, rmse = {}, mse = {}".format(client_idx, args.metric, score, mae, rmse, mse)
             )
             wandb.log({"Client {} Test/{}".format(client_idx, args.metric): score,
-            "MAE = {}, RMSE, MAPE": [mae, rmse, mape]})
+            "MAE, RMSE, MSE": [mae, rmse, mse]})
 
         avg_score = np.mean(np.array(score_list))
         mae_score = np.mean(np.array(mae_list))
         rmse_score = np.mean(np.array(rmse_list))
-        mape_score = np.mean(np.array(mape_list))
+        mse_score = np.mean(np.array(mse_list))
 
         logging.info(
-                "Client {}, Test {} = {}, mae = {}, rmse = {}, mape = {}".format(client_idx, args.metric, avg_score, mae_score, rmse_score, mape_score)
+                "Client {}, Test {} = {}, mae = {}, rmse = {}, mse = {}".format(client_idx, args.metric, avg_score, mae_score, rmse_score, mse_score)
             )
         wandb.log({"Client {} Test/{}".format(client_idx, args.metric): avg_score,
-            "MAE, RMSE, MAPE = ": [mae_score, rmse_score, mape_score]})
+            "MAE, RMSE, MSE = ": [mae_score, rmse_score, mse_score]})
 
         return True
 
