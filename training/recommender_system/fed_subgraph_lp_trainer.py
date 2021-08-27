@@ -95,7 +95,7 @@ class FedSubgraphLPTrainer(ModelTrainer):
                 score = metric(link_labels.cpu(), link_logits.cpu())
                 mae.append(mean_absolute_error(link_labels.cpu(), link_logits.cpu()))
                 rmse.append(mean_squared_error(link_labels.cpu(), link_logits.cpu(), squared = False))
-                mse.append(mean_absolute_percentage_error(link_labels.cpu(), link_logits.cpu()))
+                mse.append(mean_squared_error(link_labels.cpu(), link_logits.cpu()))
         return score, model, mae, rmse, mse
 
     def test_on_the_server(
