@@ -33,6 +33,10 @@ cd $WORKSPACE/data_preprocessing/ego_networks
 #python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data DBLP --ego_number 1000 --hop_number 2
 #python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data PubMed --ego_number 1000 --hop_number 2
 
+cd $WORKSPACE/data/ego_networks/cora
+wget --no-check-certificate --no-proxy https://fedmol.s3.us-west-1.amazonaws.com/datasets/ego-networks/cora/egonetworks.pkl
+cd $WORKSPACE/data/ego_networks/cora
+
 md5sum ./../../data/ego-networks/cora/egonetworks.pkl
 md5sum ./../../data/ego-networks/citeseer/egonetworks.pkl
 md5sum ./../../data/ego-networks/DBLP/egonetworks.pkl

@@ -50,15 +50,16 @@ command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2
 print(command)
 os.system(command)
 
-dataset_hpo = ["cora", "citeseer", "DBLP", "PubMed"]
+# "DBLP", "PubMed"
+dataset_hpo = ["cora", "citeseer"]
 # dataset_hpo = ["cora"]
 model_hpo = ["sage"]
 # model_hpo = ["gcn", "sgc", "sage"]
 partition_alpha_hpo = [0.1, 10.0]
 round_num_hpo = [100]
-local_epoch_hpo = [1]
+local_epoch_hpo = [1, 3, 5]
 batch_size_hpo = [1]
-lr_hpo = [0.1, 0.01, 0.001]
+lr_hpo = [0.01, 0.001]
 
 # model
 hidden_dim_hpo = [128]
