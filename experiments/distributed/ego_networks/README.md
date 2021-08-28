@@ -8,7 +8,7 @@ For each dataset, ego-networks needs to be sampled first.
 
 citation networks: e.g. "cora", "citeseer", "DBLP", "PubMed"
 ```
-WORKSPACE=/home/$USER/FedGraphNN
+WORKSPACE=/fsx/hchaoyan/home/FedGraphNN
 # WORKSPACE=/Users/chaoyanghe/sourcecode/FedGraphNN
 cd $WORKSPACE/data_preprocessing/ego_networks
 
@@ -17,13 +17,11 @@ mkdir $WORKSPACE/data/ego-networks/cora
 mkdir $WORKSPACE/data/ego-networks/citeseer
 mkdir $WORKSPACE/data/ego-networks/DBLP
 mkdir $WORKSPACE/data/ego-networks/PubMed
-mkdir $WORKSPACE/data/ego-networks/CS
-mkdir $WORKSPACE/data/ego-networks/Physics
 
 # FL client number = 10, ego number = 1000
-python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data cora --ego_number 1000 --hop_number 2
-python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --ego_number 1000 --hop_number 2
-python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data DBLP --ego_number 1000 --hop_number 2
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data cora --ego_number 1000 --hop_number 2 &&
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --ego_number 1000 --hop_number 2 &&
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data DBLP --ego_number 1000 --hop_number 2 && 
 python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data PubMed --ego_number 1000 --hop_number 2
 
 # FL client number = 10, ego number = 10
@@ -77,9 +75,16 @@ sh run_fed_node_clf.sh 10 10 1 8 sage hetero 2.0 20 1 1 0.0015 1 3 0.3 0.0001 Pu
 
 
 ### Sweeping
-```
-# change id to your own
-wandb login ee0b5f53d949c84cee7decbe7a629e63fb2f8408
+```change wandb id to your own
+export LC_ALL=C.UTF-8 &&
+export LANG=C.UTF-8 &&
+WORKSPACE=/fsx/hchaoyan/home/FedGraphNN &&
+cd $WORKSPACE/experiments/distributed/ego_networks/ &&
+wandb login ee0b5f53d949c84cee7decbe7a629e63fb2f8408 &&
 wandb on
-nohup python3 sweep_ego.py --starting_run_id 0 > sweeping.log 2>&1 &
+nohup python3 sweep_ego_sage_DBLP_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
+nohup python3 sweep_ego_sage_DBLP_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
+
+nohup python3 sweep_ego_sage_PubMed_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
+nohup python3 sweep_ego_sage_PubMed_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
 ```

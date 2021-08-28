@@ -50,12 +50,12 @@ command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2
 print(command)
 os.system(command)
 
-# "DBLP", "PubMed"
-dataset_hpo = ["cora", "citeseer"]
+# "DBLP", "PubMed", , "PubMed"
+dataset_hpo = ["DBLP"]
 # dataset_hpo = ["cora"]
 model_hpo = ["sage"]
 # model_hpo = ["gcn", "sgc", "sage"]
-partition_alpha_hpo = [0.1, 10.0]
+partition_alpha_hpo = [10.0]
 round_num_hpo = [100]
 local_epoch_hpo = [1, 3, 5]
 batch_size_hpo = [1]
@@ -104,7 +104,7 @@ for dataset in dataset_hpo:
                                             os.system(
                                                 "nohup sh run_fed_node_clf.sh 10 10 1 8 {args.model} hetero {args.partition_alpha} {args.round_num} "
                                                 "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} {args.dataset} "
-                                                "> ./fedgnn_ego_sage_{args.run_id}.log 2>&1 &".format(
+                                                "> ./fedgnn_ego_sage_dblp_10.0_{args.run_id}.log 2>&1 &".format(
                                                     args=args
                                                 )
                                             )
