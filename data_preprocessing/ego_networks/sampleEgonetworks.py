@@ -130,6 +130,7 @@ if __name__ == '__main__':
 
     random.seed(args.seed)
     np.random.seed(args.seed)
+    torch.manual_seed(args.seed)
 
     subgraphs, num_graphs, num_features, num_labels = get_data(args.path, args.data, args.ego_number, args.hop_number, args.sampling)
 
