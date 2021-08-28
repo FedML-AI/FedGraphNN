@@ -1,10 +1,12 @@
 #!/bin/bash
 #set -x
 
+kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2}}')
 
 # Declare an array of string with type
+# PubMed + sage + 10.0 + 100 + 1 + 1 + 0.01 + 128 + 3 + 0.5 + 0.00001
 declare -a dataset_hps=("PubMed")
-declare -a model_hps=("gcn" "sgc" "sage")
+declare -a model_hps=("sage")
 declare -a partition_alpha_hps=("10.0")
 declare -a round_num_hps=("100")
 declare -a epoch_hps=("1" "3" "5")

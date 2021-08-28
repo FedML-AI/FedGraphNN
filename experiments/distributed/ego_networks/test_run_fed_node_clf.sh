@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# sh test_run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 0.0001 cora
+# sh test_run_fed_node_clf.sh 10 10 1 1 gcn hetero 0.1 20 1 32 0.0015 32 3 0.3 0.0001 cora
 CLIENT_NUM=$1
 WORKER_NUM=$2
 SERVER_NUM=$3
