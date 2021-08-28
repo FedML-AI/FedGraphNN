@@ -2,7 +2,7 @@
 
 set -x
 
-WORKSPACE=/home/chaoyanghe/FedGraphNN
+WORKSPACE=/fsx/hchaoyan/home/FedGraphNN
 MASTER_IP="lambda-server3"
 INDEX=0
 NODE_NUM=1
@@ -14,7 +14,7 @@ docker container kill $(docker ps -q)
 
 
 echo "start new docker run"
-nvidia-docker run -i -v $WORKSPACE:$WORKSPACE --shm-size=60g --ulimit nofile=65535 --ulimit memlock=-1 --privileged \
+nvidia-docker run -i -v /fsx:/fsx --shm-size=60g --ulimit nofile=65535 --ulimit memlock=-1 --privileged \
 --env AWS_BATCH_JOB_NODE_INDEX=$INDEX \
 --env AWS_BATCH_JOB_NUM_NODES=$NODE_NUM \
 --env AWS_BATCH_JOB_MAIN_NODE_INDEX=0 \

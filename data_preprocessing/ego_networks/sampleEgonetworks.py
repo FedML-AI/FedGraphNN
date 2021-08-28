@@ -120,11 +120,16 @@ if __name__ == '__main__':
                         type=int, default=2)
     parser.add_argument('--sampling', help='the way to sample egos: ["random", "byLabel"]',
                         type=str, default='random')
+    parser.add_argument('--seed', help='seed for randomness;',
+                        type=int, default=123)
 
     try:
         args = parser.parse_args()
     except IOError as msg:
         parser.error(str(msg))
+
+    random.seed(args.seed)
+    np.random.seed(args.seed)
 
     subgraphs, num_graphs, num_features, num_labels = get_data(args.path, args.data, args.ego_number, args.hop_number, args.sampling)
 

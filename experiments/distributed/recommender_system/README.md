@@ -42,7 +42,7 @@ sh run_fed_subgraph_link_pred.sh 8 8 1 8 gcn uniform 0.1 100 2 1 0.01 64 5 0.1 e
 # dataset: epinions; model: gat; client_num = 8
 sh run_fed_subgraph_link_pred.sh 8 8 1 8 gat uniform 0.1 50 1 1 0.001 64 5 0.1 epinions
 
-# dataset: epinions; model: sage; client_num = 8
+# dataset: epinions; model: sage; client_num = 8（***)
 sh run_fed_subgraph_link_pred.sh 8 8 1 8 sage uniform 0.1 2 2 1 0.01 64 5 0.1 epinions
 ```
 

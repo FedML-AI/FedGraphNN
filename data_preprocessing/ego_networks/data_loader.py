@@ -26,6 +26,8 @@ def get_data(path, data):
 def create_random_split(path, data):
     subgraphs, _, _, _ = get_data(path, data)
 
+    random.seed(123)
+    np.random.seed(123)
     # inductive: train & test data are from different subgraphs
     random.shuffle(subgraphs)
     train_size = int(len(subgraphs) * 0.8)
@@ -112,6 +114,9 @@ def partition_data_by_sample_size(
     val_idxs = list(range(num_val_samples))
     test_idxs = list(range(num_test_samples))
 
+    random.seed(123)
+    np.random.seed(123)
+
     random.shuffle(train_idxs)
     random.shuffle(val_idxs)
     random.shuffle(test_idxs)
@@ -189,7 +194,7 @@ def visualize_label_distribution_similarity_score(labels_of_all_clients):
     logging.info(label_distribution_clients)
 
     client_num = len(label_distribution_clients)
-    label_distribution_similarity_score_matrix = np.random.random(
+    label_distribution_similarity_score_matrix = np.zeros(
         (client_num, client_num)
     )
 

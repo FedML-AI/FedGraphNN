@@ -46,43 +46,46 @@ logging.basicConfig(
 parser = argparse.ArgumentParser()
 args = add_args(parser)
 
-command = "kill $(ps aux | grep fed_subgraph_link_pred.py | grep -v grep | awk '{{print $2}}')"
+command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2}}')"
 print(command)
 os.system(command)
 
-# client_num_hpo = [8, 28] # 2
-client_num_hpo = [8] # 2
-dataset_hpo = ["epinions"] # 2
-model_hpo = ["sage"] # 3
-partition_alpha_hpo = [0.1]
-round_num_hpo = [100] # 3
-local_epoch_hpo = [1, 2, 5] # 3
+# "DBLP", "PubMed"
+dataset_hpo = ["cora", "citeseer"]
+# dataset_hpo = ["cora"]
+model_hpo = ["sage"]
+# model_hpo = ["gcn", "sgc", "sage"]
+partition_alpha_hpo = [0.1, 10.0]
+round_num_hpo = [100]
+local_epoch_hpo = [1, 3, 5]
 batch_size_hpo = [1]
-lr_hpo = [0.01, 0.001] # 3
-# hidden_dim_hpo = [32, 64, 128, 256] # 4
-hidden_dim_hpo = [64] # 4
+lr_hpo = [0.01, 0.001]
+
+# model
+hidden_dim_hpo = [128]
 n_layers_hpo = [3]
 dropout_hpo = [0.5]
+weight_decay_hpo = [1e-5]
 
 run_id = 0
-for client_num in client_num_hpo:
-    for dataset in dataset_hpo:
-        for model in model_hpo:
-            for partition_alpha in partition_alpha_hpo:
-                for round_num in round_num_hpo:
-                    for epoch in local_epoch_hpo:
-                        for batch_size in batch_size_hpo:
-                            for lr in lr_hpo:
-                                for hidden_dim in hidden_dim_hpo:
-                                    for n_layers in n_layers_hpo:
-                                        for dr in dropout_hpo:
+
+for dataset in dataset_hpo:
+    for model in model_hpo:
+        for partition_alpha in partition_alpha_hpo:
+            for round_num in round_num_hpo:
+                for epoch in local_epoch_hpo:
+                    for batch_size in batch_size_hpo:
+                        for lr in lr_hpo:
+                            for hidden_dim in hidden_dim_hpo:
+                                for n_layers in n_layers_hpo:
+                                    for dr in dropout_hpo:
+                                        for weight_decay in weight_decay_hpo:
                                             print(args.starting_run_id)
                                             print(run_id)
                                             if run_id < args.starting_run_id:
                                                 run_id += 1
                                                 continue
 
-                                            args.client_num = client_num
                                             args.dataset = dataset
                                             args.model = model
                                             args.partition_alpha = partition_alpha
@@ -93,30 +96,21 @@ for client_num in client_num_hpo:
                                             args.hidden_dim = hidden_dim
                                             args.n_layers = n_layers
                                             args.dr = dr
+                                            args.weight_decay = weight_decay
                                             args.run_id = run_id
-                                            if (
-                                                args.dataset == "ciao"
-                                                and args.client_num == 28
-                                            ):
-                                                args.client_num = 28
-                                            elif (
-                                                args.dataset == "epinions"
-                                                and args.client_num == 28
-                                            ):
-                                                args.client_num = 27
 
                                             print(args)
-                                            # sh run_fed_subgraph_link_pred.sh 28 28 1 8 gcn uniform 0.1 1 20 1 0.01 64 5 0.1 ciao
+                                            # sh run_fed_node_clf.sh 10 10 1 1 gcn hetero 2.0 20 1 32 0.0015 32 3 0.3 cora
                                             os.system(
-                                                "nohup sh run_fed_subgraph_link_pred.sh {args.client_num} {args.client_num} 1 8 {args.model} uniform {args.partition_alpha} "
-                                                "{args.round_num} {args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.dataset} "
-                                                "> ./fedgnn_rs_{args.run_id}.log 2>&1 &".format(
+                                                "nohup sh run_fed_node_clf.sh 10 10 1 8 {args.model} hetero {args.partition_alpha} {args.round_num} "
+                                                "{args.epoch} {args.batch_size} {args.lr} {args.hidden_dim} {args.n_layers} {args.dr} {args.weight_decay} {args.dataset} "
+                                                "> ./fedgnn_ego_sage_{args.run_id}.log 2>&1 &".format(
                                                     args=args
                                                 )
                                             )
                                             wait_for_the_training_process()
                                             logging.info("cleaning the training...")
-                                            command = "kill $(ps aux | grep fed_subgraph_link_pred.py | grep -v grep | awk '{{print $2}}')"
+                                            command = "kill $(ps aux | grep fed_node_clf.py | grep -v grep | awk '{{print $2}}')"
                                             print(command)
                                             os.system(command)
                                             sleep(5)

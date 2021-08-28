@@ -21,10 +21,10 @@ mkdir $WORKSPACE/data/ego-networks/CS
 mkdir $WORKSPACE/data/ego-networks/Physics
 
 # FL client number = 10, ego number = 1000
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data cora --ego_number 1000 --hop_number 2
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --ego_number 1000 --hop_number 2
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data DBLP --ego_number 1000 --hop_number 2
-python sampleEgonetworks.py --path ./../../data/ego-networks/ --data PubMed --ego_number 1000 --hop_number 2
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data cora --ego_number 1000 --hop_number 2
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data citeseer --ego_number 1000 --hop_number 2
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data DBLP --ego_number 1000 --hop_number 2
+python3 sampleEgonetworks.py --path ./../../data/ego-networks/ --data PubMed --ego_number 1000 --hop_number 2
 
 # FL client number = 10, ego number = 10
 python sampleEgonetworks.py --path ./../../data/ego-networks/ --data CS --ego_number 10 --hop_number 3
