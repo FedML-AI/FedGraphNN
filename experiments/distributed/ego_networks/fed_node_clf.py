@@ -13,6 +13,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.getcwd(), "")))
 from data_preprocessing.ego_networks.data_loader import *
 from model.ego_networks.gcn import GCNNodeCLF
 from model.ego_networks.sgc import SGCNodeCLF
+from model.ego_networks.gat import GATNodeCLF
 from model.ego_networks.sage import SAGENodeCLF
 
 from training.ego_networks.federated_nc_trainer import FedNodeClfTrainer
@@ -234,6 +235,12 @@ def create_model(args, model_name, feat_dim, num_cats, output_dim):
             nhid=args.hidden_size,
             nclass=num_cats,
             nlayer=args.n_layers,
+            dropout=args.dropout,
+        )
+    elif model_name == "gat":
+        model = GATNodeCLF(
+            in_channels = feat_dim,
+            out_channels = num_cats, 
             dropout=args.dropout,
         )
     else:
