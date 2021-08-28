@@ -160,8 +160,8 @@ def get_data_category(args, path, data, load_processed=True):
     """For link prediction."""
     if load_processed:
         if args.client_num_in_total > 1:
-        with open(os.path.join(path, data, "subgraphs.pkl"), "rb") as f:
-            graphs = pickle.load(f)
+            with open(os.path.join(path, data, "subgraphs.pkl"), "rb") as f:
+                graphs = pickle.load(f)
         
         else:
             with open(os.path.join(path, data, 'graph.pkl'), "rb") as f:
