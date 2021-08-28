@@ -82,9 +82,15 @@ WORKSPACE=/fsx/hchaoyan/home/FedGraphNN &&
 cd $WORKSPACE/experiments/distributed/ego_networks/ &&
 wandb login ee0b5f53d949c84cee7decbe7a629e63fb2f8408 &&
 wandb on
-nohup python3 sweep_ego_sage_DBLP_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
-nohup python3 sweep_ego_sage_DBLP_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
+nohup python3 sweep_ego_sage_DBLP_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running 0)
+nohup python3 sweep_ego_sage_DBLP_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running 1)
 
-nohup python3 sweep_ego_sage_PubMed_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
-nohup python3 sweep_ego_sage_PubMed_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running)
+nohup python3 sweep_ego_sage_PubMed_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running 2)
+nohup python3 sweep_ego_sage_PubMed_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running 3)
+
+nohup python3 sweep_ego_sage_cora_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running 4)
+nohup python3 sweep_ego_sage_cora_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running 5)
+
+nohup python3 sweep_ego_sage_citeseer_0.1.py --starting_run_id 0 > sweeping.log 2>&1 & (running 6)
+nohup python3 sweep_ego_sage_citeseer_10.0.py --starting_run_id 0 > sweeping.log 2>&1 & (running 7)
 ```
