@@ -18,6 +18,8 @@ put the following code before the finish() function at FedML/fedml_api/distribut
                 post_complete_message_to_sweep_process(self.args)
                 
 """
+
+
 def add_args(parser):
     """
     parser : argparse.ArgumentParser
@@ -50,9 +52,11 @@ def wait_for_the_training_process():
 
 
 # customize the log format
-logging.basicConfig(level=logging.INFO,
-                    format='%(process)s %(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-                    datefmt='%Y-%m-%d,%H:%M:%S')
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(process)s %(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s",
+    datefmt="%Y-%m-%d,%H:%M:%S",
+)
 
 parser = argparse.ArgumentParser()
 args = add_args(parser)
@@ -119,22 +123,26 @@ for round in round_hop:
                                 logging.info(args)
 
                                 # sh run_fedavg_distributed_pytorch.sh 4 4 1 4 graphsage hetero 0.2 20 1 1 0.0015 64 32 0.3 64 64 sider "./../../../data/sider/" 0
-                                os.system('nohup sh run_fedavg_distributed_pytorch.sh 4 4 1 {args.gpu} '
-                                          '{args.model_name} '
-                                          'hetero '
-                                          '{args.alpha} '
-                                          '{args.round} '
-                                          '{args.epoch} '
-                                          '1 '
-                                          '{args.lr} '
-                                          '{args.sage_dim} '
-                                          '{args.node_dim} '
-                                          '{args.dr} '
-                                          '{args.read_dim} '
-                                          '{args.graph_dim} '
-                                          '{args.dataset} '
-                                          '"./../../../data/{args.dataset}/" 0 '
-                                          '> ./fedgnn_cls_{args.model_name}_{args.dataset}_{args.run_id}.log 2>&1 &'.format(args=args))
+                                os.system(
+                                    "nohup sh run_fedavg_distributed_pytorch.sh 4 4 1 {args.gpu} "
+                                    "{args.model_name} "
+                                    "hetero "
+                                    "{args.alpha} "
+                                    "{args.round} "
+                                    "{args.epoch} "
+                                    "1 "
+                                    "{args.lr} "
+                                    "{args.sage_dim} "
+                                    "{args.node_dim} "
+                                    "{args.dr} "
+                                    "{args.read_dim} "
+                                    "{args.graph_dim} "
+                                    "{args.dataset} "
+                                    '"./../../../data/{args.dataset}/" 0 '
+                                    "> ./fedgnn_cls_{args.model_name}_{args.dataset}_{args.run_id}.log 2>&1 &".format(
+                                        args=args
+                                    )
+                                )
                                 wait_for_the_training_process()
                                 # sleep(3600*10)
                                 logging.info("cleaning the training...")

@@ -10,8 +10,8 @@ from FedML.fedml_core.trainer.model_trainer import ModelTrainer
 
 # Trainer for MoleculeNet. The evaluation metric is ROC-AUC
 
-class GcnMoleculeNetTrainer(ModelTrainer):
 
+class GcnMoleculeNetTrainer(ModelTrainer):
     def get_model_params(self):
         return self.model.cpu().state_dict()
 
@@ -31,7 +31,7 @@ class GcnMoleculeNetTrainer(ModelTrainer):
         except:
             pass
 
-        criterion = torch.nn.BCEWithLogitsLoss(reduction='none')
+        criterion = torch.nn.BCEWithLogitsLoss(reduction="none")
         if args.client_optimizer == "sgd":
             optimizer = torch.optim.SGD(model.parameters(), lr=args.lr)
         else:
@@ -40,15 +40,21 @@ class GcnMoleculeNetTrainer(ModelTrainer):
         max_test_score = 0
         best_model_params = {}
         for epoch in range(args.epochs):
-            for mol_idxs, (adj_matrix, feature_matrix, label, mask) in enumerate(train_data):
+            for mol_idxs, (adj_matrix, feature_matrix, label, mask) in enumerate(
+                train_data
+            ):
                 # Pass on molecules that have no labels
                 if torch.all(mask == 0).item():
                     continue
 
                 optimizer.zero_grad()
 
-                adj_matrix = adj_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
-                feature_matrix = feature_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
+                adj_matrix = adj_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
+                feature_matrix = feature_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
                 label = label.to(device=device, dtype=torch.float32, non_blocking=True)
                 mask = mask.to(device=device, dtype=torch.float32, non_blocking=True)
 
@@ -59,14 +65,22 @@ class GcnMoleculeNetTrainer(ModelTrainer):
                 loss.backward()
                 optimizer.step()
 
-                if ((mol_idxs + 1) % args.frequency_of_the_test == 0) or (mol_idxs == len(train_data) - 1):
+                if ((mol_idxs + 1) % args.frequency_of_the_test == 0) or (
+                    mol_idxs == len(train_data) - 1
+                ):
                     if test_data is not None:
                         test_score, _ = self.test(self.test_data, device, args)
-                        print('Epoch = {}, Iter = {}/{}: Test Score = {}'.format(epoch, mol_idxs + 1, len(train_data), test_score))
+                        print(
+                            "Epoch = {}, Iter = {}/{}: Test Score = {}".format(
+                                epoch, mol_idxs + 1, len(train_data), test_score
+                            )
+                        )
                         if test_score > max_test_score:
                             max_test_score = test_score
-                            best_model_params = {k: v.cpu() for k, v in model.state_dict().items()}
-                        print('Current best = {}'.format(max_test_score))
+                            best_model_params = {
+                                k: v.cpu() for k, v in model.state_dict().items()
+                            }
+                        print("Current best = {}".format(max_test_score))
 
         return max_test_score, best_model_params
 
@@ -80,9 +94,15 @@ class GcnMoleculeNetTrainer(ModelTrainer):
             y_pred = []
             y_true = []
             masks = []
-            for mol_idx, (adj_matrix, feature_matrix, label, mask) in enumerate(test_data):
-                adj_matrix = adj_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
-                feature_matrix = feature_matrix.to(device=device, dtype=torch.float32, non_blocking=True)
+            for mol_idx, (adj_matrix, feature_matrix, label, mask) in enumerate(
+                test_data
+            ):
+                adj_matrix = adj_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
+                feature_matrix = feature_matrix.to(
+                    device=device, dtype=torch.float32, non_blocking=True
+                )
 
                 logits = model(adj_matrix, feature_matrix)
 
@@ -101,9 +121,9 @@ class GcnMoleculeNetTrainer(ModelTrainer):
             pred = y_pred[valid_idxs, label].flatten()
 
             if np.all(truth == 0.0) or np.all(truth == 1.0):
-                results.append(float('nan'))
+                results.append(float("nan"))
             else:
-                if args.metric == 'prc-auc':
+                if args.metric == "prc-auc":
                     precision, recall, _ = precision_recall_curve(truth, pred)
                     score = auc(recall, precision)
                 else:
@@ -115,7 +135,9 @@ class GcnMoleculeNetTrainer(ModelTrainer):
 
         return score, model
 
-    def test_on_the_server(self, train_data_local_dict, test_data_local_dict, device, args=None) -> bool:
+    def test_on_the_server(
+        self, train_data_local_dict, test_data_local_dict, device, args=None
+    ) -> bool:
         logging.info("----------test_on_the_server--------")
 
         model_list, score_list = [], []
@@ -126,23 +148,25 @@ class GcnMoleculeNetTrainer(ModelTrainer):
                 self._compare_models(model, model_list[idx])
             model_list.append(model)
             score_list.append(score)
-            logging.info('Client {}, Test ROC-AUC score = {}'.format(client_idx, score))
+            logging.info("Client {}, Test ROC-AUC score = {}".format(client_idx, score))
             wandb.log({"Client {} Test/ROC-AUC".format(client_idx): score})
         avg_score = np.mean(np.array(score_list))
-        logging.info('Test ROC-AUC Score = {}'.format(avg_score))
+        logging.info("Test ROC-AUC Score = {}".format(avg_score))
         wandb.log({"Test/ROC-AUC": avg_score})
         return True
 
     def _compare_models(self, model_1, model_2):
         models_differ = 0
-        for key_item_1, key_item_2 in zip(model_1.state_dict().items(), model_2.state_dict().items()):
+        for key_item_1, key_item_2 in zip(
+            model_1.state_dict().items(), model_2.state_dict().items()
+        ):
             if torch.equal(key_item_1[1], key_item_2[1]):
                 pass
             else:
                 models_differ += 1
                 if key_item_1[0] == key_item_2[0]:
-                    logging.info('Mismatch found at', key_item_1[0])
+                    logging.info("Mismatch found at", key_item_1[0])
                 else:
                     raise Exception
         if models_differ == 0:
-            logging.info('Models match perfectly! :)')
+            logging.info("Models match perfectly! :)")

@@ -24,7 +24,9 @@ class GraphAttentionLayer(nn.Module):
         self.leakyrelu = nn.LeakyReLU(self.alpha)
 
     def forward(self, h, adj):
-        Wh = torch.mm(h, self.W)  # h.shape: (N, in_features), Wh.shape: (N, out_features)
+        Wh = torch.mm(
+            h, self.W
+        )  # h.shape: (N, in_features), Wh.shape: (N, out_features)
         a_input = self._prepare_attentional_mechanism_input(Wh)
         e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
 
@@ -43,12 +45,21 @@ class GraphAttentionLayer(nn.Module):
         N = Wh.size()[0]
         Wh_repeated_in_chunks = Wh.repeat_interleave(N, dim=0)
         Wh_repeated_alternating = Wh.repeat(N, 1)
-        all_combinations_matrix = torch.cat([Wh_repeated_in_chunks, Wh_repeated_alternating], dim=1)
+        all_combinations_matrix = torch.cat(
+            [Wh_repeated_in_chunks, Wh_repeated_alternating], dim=1
+        )
 
         return all_combinations_matrix.view(N, N, 2 * self.out_features)
 
     def __repr__(self):
-        return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
+        return (
+            self.__class__.__name__
+            + " ("
+            + str(self.in_features)
+            + " -> "
+            + str(self.out_features)
+            + ")"
+        )
 
 
 class GAT(nn.Module):
@@ -58,8 +69,20 @@ class GAT(nn.Module):
         self.dropout = dropout
 
         self.attentions = nn.ModuleList(
-            [GraphAttentionLayer(feat_dim, hidden_dim1, dropout=dropout, alpha=alpha, concat=True) for _ in range(nheads)])
-        self.out_att = GraphAttentionLayer(hidden_dim1 * nheads, hidden_dim2, dropout=dropout, alpha=alpha, concat=False)
+            [
+                GraphAttentionLayer(
+                    feat_dim, hidden_dim1, dropout=dropout, alpha=alpha, concat=True
+                )
+                for _ in range(nheads)
+            ]
+        )
+        self.out_att = GraphAttentionLayer(
+            hidden_dim1 * nheads,
+            hidden_dim2,
+            dropout=dropout,
+            alpha=alpha,
+            concat=False,
+        )
 
     def forward(self, x, adj):
         x = F.dropout(x, self.dropout, training=self.training)
@@ -88,12 +111,17 @@ class Readout(nn.Module):
         self.act = nn.ReLU()
 
     def forward(self, node_features, node_embeddings):
-        combined_rep = torch.cat((node_features, node_embeddings),
-                                 dim=1)  # Concat initial node attributed with embeddings from sage
+        combined_rep = torch.cat(
+            (node_features, node_embeddings), dim=1
+        )  # Concat initial node attributed with embeddings from sage
         hidden_rep = self.act(self.layer1(combined_rep))
-        graph_rep = self.act(self.layer2(hidden_rep))  # Generate final graph level embedding
+        graph_rep = self.act(
+            self.layer2(hidden_rep)
+        )  # Generate final graph level embedding
 
-        logits = torch.mean(self.output(graph_rep), dim=0)  # Generated logits for multilabel classification
+        logits = torch.mean(
+            self.output(graph_rep), dim=0
+        )  # Generated logits for multilabel classification
 
         return logits
 
@@ -103,11 +131,34 @@ class GatMoleculeNet(nn.Module):
     Network that consolidates GAT + Readout into a single nn.Module
     """
 
-    def __init__(self, feat_dim, gat_hidden_dim1, node_embedding_dim, gat_dropout, gat_alpha, gat_nheads, readout_hidden_dim, graph_embedding_dim,
-                 num_categories):
+    def __init__(
+        self,
+        feat_dim,
+        gat_hidden_dim1,
+        node_embedding_dim,
+        gat_dropout,
+        gat_alpha,
+        gat_nheads,
+        readout_hidden_dim,
+        graph_embedding_dim,
+        num_categories,
+    ):
         super(GatMoleculeNet, self).__init__()
-        self.gat = GAT(feat_dim, gat_hidden_dim1, node_embedding_dim, gat_dropout, gat_alpha, gat_nheads)
-        self.readout = Readout(feat_dim, node_embedding_dim, readout_hidden_dim, graph_embedding_dim, num_categories)
+        self.gat = GAT(
+            feat_dim,
+            gat_hidden_dim1,
+            node_embedding_dim,
+            gat_dropout,
+            gat_alpha,
+            gat_nheads,
+        )
+        self.readout = Readout(
+            feat_dim,
+            node_embedding_dim,
+            readout_hidden_dim,
+            graph_embedding_dim,
+            num_categories,
+        )
 
     def forward(self, adj_matrix, feature_matrix):
         node_embeddings = self.gat(feature_matrix, adj_matrix)

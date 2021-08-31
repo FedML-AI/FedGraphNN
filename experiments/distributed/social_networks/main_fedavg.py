@@ -80,36 +80,75 @@ def add_args(parser):
 
 
 def load_data(args, dataset_name):
-    if args.dataset not in ["COLLAB", "REDDIT-BINARY", "REDDIT-MULTI-5K", "REDDIT-MULTI-12K", "IMDB-BINARY", "IMDB-MULTI" ]:
+    if args.dataset not in [
+        "COLLAB",
+        "REDDIT-BINARY",
+        "REDDIT-MULTI-5K",
+        "REDDIT-MULTI-12K",
+        "IMDB-BINARY",
+        "IMDB-MULTI",
+    ]:
         raise Exception("no such dataset!")
 
-    compact = (args.model == 'graphsage')
+    compact = args.model == "graphsage"
 
     logging.info("load_data. dataset_name = %s" % dataset_name)
-    graphs, feat_dim, num_cats  = get_data(args.data_dir, args.dataset)
+    graphs, feat_dim, num_cats = get_data(args.data_dir, args.dataset)
     unif = True if args.partition_method == "homo" else False
-    if args.model == 'gcn':
+    if args.model == "gcn":
         args.normalize_features = True
         args.normalize_adjacency = True
 
-    train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global, \
-    data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict = load_partition_data(
+    (
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+    ) = load_partition_data(
         args,
         args.data_dir,
         args.client_num_in_total,
-        uniform=unif, compact=compact, normalize_features=args.normalize_features, normalize_adj=args.normalize_adjacency)
+        uniform=unif,
+        compact=compact,
+        normalize_features=args.normalize_features,
+        normalize_adj=args.normalize_adjacency,
+    )
 
-    dataset = [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
-               data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict]
-
+    dataset = [
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+    ]
 
     return dataset, feat_dim, num_cats
 
 
 def create_model(args, model_name, feat_dim, num_cats, output_dim):
-    logging.info("create_model. model_name = %s, output_dim = %s" % (model_name, output_dim))
-    if model_name == 'gin':
-        model = GIN(nfeat = feat_dim, nhid = args.hidden_size, nclass = num_cats, nlayer = args.n_layers, dropout = args.dropout, eps=args.eps)
+    logging.info(
+        "create_model. model_name = %s, output_dim = %s" % (model_name, output_dim)
+    )
+    if model_name == "gin":
+        model = GIN(
+            nfeat=feat_dim,
+            nhid=args.hidden_size,
+            nclass=num_cats,
+            nlayer=args.n_layers,
+            dropout=args.dropout,
+            eps=args.eps,
+        )
         trainer = GINSocialNetworkTrainer(model)
     else:
         raise Exception("such model does not exist !")
@@ -129,7 +168,11 @@ def init_training_device(process_ID, fl_worker_num, gpu_num_per_machine):
         process_gpu_dict[client_index] = gpu_index
 
     logging.info(process_gpu_dict)
-    device = torch.device("cuda:" + str(process_gpu_dict[process_ID - 1]) if torch.cuda.is_available() else "cpu")
+    device = torch.device(
+        "cuda:" + str(process_gpu_dict[process_ID - 1])
+        if torch.cuda.is_available()
+        else "cpu"
+    )
     logging.info(device)
     return device
 
@@ -141,7 +184,7 @@ def post_complete_message_to_sweep_process(args):
         os.mkfifo(pipe_path)
     pipe_fd = os.open(pipe_path, os.O_WRONLY)
 
-    with os.fdopen(pipe_fd, 'w') as pipe:
+    with os.fdopen(pipe_fd, "w") as pipe:
         pipe.write("training is finished! \n%s" % (str(args)))
 
 
@@ -158,16 +201,25 @@ if __name__ == "__main__":
     setproctitle.setproctitle(str_process_name)
 
     # customize the log format
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s',
-                        datefmt='%Y-%m-%d,%H:%M:%S')
+    logging.basicConfig(
+        level=logging.INFO,
+        format="%(asctime)s.%(msecs)03d - {%(module)s.py (%(lineno)d)} - %(funcName)s(): %(message)s",
+        datefmt="%Y-%m-%d,%H:%M:%S",
+    )
     logging.info(args)
 
     hostname = socket.gethostname()
-    logging.info("#############process ID = " + str(process_id) +
-                 ", host name = " + hostname + "########" +
-                 ", process ID = " + str(os.getpid()) +
-                 ", process Name = " + str(psutil.Process(os.getpid())))
+    logging.info(
+        "#############process ID = "
+        + str(process_id)
+        + ", host name = "
+        + hostname
+        + "########"
+        + ", process ID = "
+        + str(os.getpid())
+        + ", process Name = "
+        + str(psutil.Process(os.getpid()))
+    )
 
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
 
@@ -176,8 +228,13 @@ if __name__ == "__main__":
         wandb.init(
             # project="federated_nas",
             project="fedmolecule",
-            name="FedGraphNN(d)" + str(args.model) + "r" + str(args.dataset) + "-lr" + str(args.lr),
-            config=args
+            name="FedGraphNN(d)"
+            + str(args.model)
+            + "r"
+            + str(args.dataset)
+            + "-lr"
+            + str(args.lr),
+            config=args,
         )
 
     # Set the random seed. The np.random seed determines the dataset partition.
@@ -195,12 +252,24 @@ if __name__ == "__main__":
     # machine 4: worker3, worker7;
     # Therefore, we can see that workers are assigned according to the order of machine list.
     logging.info("process_id = %d, size = %d" % (process_id, worker_number))
-    device = init_training_device(process_id, worker_number - 1, args.gpu_num_per_server)
+    device = init_training_device(
+        process_id, worker_number - 1, args.gpu_num_per_server
+    )
 
     # load data
     dataset, feat_dim, num_cats = load_data(args, args.dataset)
-    [train_data_num, val_data_num, test_data_num, train_data_global, val_data_global, test_data_global,
-     data_local_num_dict, train_data_local_dict, val_data_local_dict, test_data_local_dict] = dataset
+    [
+        train_data_num,
+        val_data_num,
+        test_data_num,
+        train_data_global,
+        val_data_global,
+        test_data_global,
+        data_local_num_dict,
+        train_data_local_dict,
+        val_data_local_dict,
+        test_data_local_dict,
+    ] = dataset
     print(feat_dim)
     print(num_cats)
     print("Dataset DONE!")

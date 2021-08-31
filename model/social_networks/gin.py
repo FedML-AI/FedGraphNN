@@ -4,7 +4,7 @@ from torch_geometric.nn import GINConv, global_add_pool
 
 
 class GIN(torch.nn.Module):
-    def __init__(self, nfeat, nhid, nclass, nlayer , dropout, eps):
+    def __init__(self, nfeat, nhid, nclass, nlayer, dropout, eps):
         super(GIN, self).__init__()
         self.num_layers = nlayer
         self.dropout = dropout
@@ -12,10 +12,16 @@ class GIN(torch.nn.Module):
         self.pre = torch.nn.Sequential(torch.nn.Linear(nfeat, nhid))
 
         self.graph_convs = torch.nn.ModuleList()
-        self.nn1 = torch.nn.Sequential(torch.nn.Linear(nhid, nhid), torch.nn.ReLU(), torch.nn.Linear(nhid, nhid))
+        self.nn1 = torch.nn.Sequential(
+            torch.nn.Linear(nhid, nhid), torch.nn.ReLU(), torch.nn.Linear(nhid, nhid)
+        )
         self.graph_convs.append(GINConv(self.nn1, eps=eps))
         for l in range(nlayer - 1):
-            self.nnk = torch.nn.Sequential(torch.nn.Linear(nhid, nhid), torch.nn.ReLU(), torch.nn.Linear(nhid, nhid))
+            self.nnk = torch.nn.Sequential(
+                torch.nn.Linear(nhid, nhid),
+                torch.nn.ReLU(),
+                torch.nn.Linear(nhid, nhid),
+            )
             self.graph_convs.append(GINConv(self.nnk, eps=eps))
 
         self.post = torch.nn.Sequential(torch.nn.Linear(nhid, nhid), torch.nn.ReLU())
