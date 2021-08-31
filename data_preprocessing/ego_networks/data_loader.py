@@ -88,11 +88,12 @@ def create_non_uniform_split(args, idxs, client_number, data_type="train", is_lo
     # plot the (#client, #sample) distribution
     if data_type == "train":
         logging.info(sample_num_distribution)
+        pickle.dump(sample_num_distribution, open(os.path.join("./visualization", f'sample_num_distribution_{args.dataset}_alpha{args.partition_alpha}.pkl'), 'wb'))
         plt.hist(sample_num_distribution)
         plt.title("Sample Number Distribution")
         plt.xlabel('number of samples')
         plt.ylabel("number of clients")
-        fig_name = "x_hist.png"
+        fig_name = f"x_hist_{args.dataset}_alpha{args.partition_alpha}.png"
         fig_dir = os.path.join("./visualization", fig_name)
         plt.savefig(fig_dir)
 
