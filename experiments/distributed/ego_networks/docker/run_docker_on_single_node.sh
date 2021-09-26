@@ -2,7 +2,8 @@
 
 set -x
 
-WORKSPACE=/fsx/hchaoyan/home/FedGraphNN
+# change this line to your workspace
+WORKSPACE=xxxx
 MASTER_IP="lambda-server3"
 INDEX=0
 NODE_NUM=1
