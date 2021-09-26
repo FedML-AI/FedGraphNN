@@ -45,10 +45,10 @@ if [ "${AWS_BATCH_JOB_MAIN_NODE_INDEX}" == "${AWS_BATCH_JOB_NODE_INDEX}" ]; then
 fi
 
 install_deps() {
-  if [[ ! -v M5_BATCH_BOOTSTRAP ]]; then
-    echo "M5_BATCH_BOOTSTRAP is not set. continuing"
+  if [[ ! -v FEDML_BATCH_BOOTSTRAP ]]; then
+    echo "FEDML_BATCH_BOOTSTRAP is not set. continuing"
   else
-    $M5_BATCH_BOOTSTRAP
+    $FEDML_BATCH_BOOTSTRAP
   fi
 }
 
@@ -70,12 +70,12 @@ wait_for_nodes () {
   echo "$ip slots=$availablecores" >> $HOST_FILE_PATH
   
   startTime=$(date +"%s")
-  # M5_BATCH_BOOTSTRAP_TIMEOUT is time in minutes which will be used to wait. Default is 15 mins
-  if [[ ! -v M5_BATCH_BOOTSTRAP_TIMEOUT ]]; then
-    echo " M5_BATCH_BOOTSTRAP_TIMEOUT is not set. Defaulting to 15 minutes."
+  # FEDML_BATCH_BOOTSTRAP_TIMEOUT is time in minutes which will be used to wait. Default is 15 mins
+  if [[ ! -v FEDML_BATCH_BOOTSTRAP_TIMEOUT ]]; then
+    echo " FEDML_BATCH_BOOTSTRAP_TIMEOUT is not set. Defaulting to 15 minutes."
     waitTime=$(expr 15 \* 60)
   else
-    waitTime=$(expr $M5_BATCH_BOOTSTRAP_TIMEOUT \* 60)
+    waitTime=$(expr $FEDML_BATCH_BOOTSTRAP_TIMEOUT \* 60)
   fi
 
   lines=$(sort $HOST_FILE_PATH|uniq|wc -l)
@@ -105,10 +105,10 @@ wait_for_nodes () {
   cp  ${HOST_FILE_PATH}-deduped /job/hostfile
   cat /job/hostfile
 
-  if [[ ! -v M5_BATCH_ENTRY_SCRIPT ]]; then
-    echo "M5_BATCH_ENTRY_SCRIPT  is not set. continuing"
+  if [[ ! -v FEDML_BATCH_ENTRY_SCRIPT ]]; then
+    echo "FEDML_BATCH_ENTRY_SCRIPT  is not set. continuing"
   else
-    $M5_BATCH_ENTRY_SCRIPT
+    $FEDML_BATCH_ENTRY_SCRIPT
     if [ $? -eq 0 ]
     then
        log "Writing exit code 0  to $AWS_BATCH_EXIT_CODE_FILE and shutting down supervisord"

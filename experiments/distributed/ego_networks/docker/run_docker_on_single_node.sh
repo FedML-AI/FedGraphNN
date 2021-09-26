@@ -21,8 +21,8 @@ nvidia-docker run -i -v /fsx:/fsx --shm-size=60g --ulimit nofile=65535 --ulimit 
 --env AWS_BATCH_JOB_ID=string \
 --env AWS_BATCH_JOB_MAIN_NODE_PRIVATE_IPV4_ADDRESS=$MASTER_IP \
 --env  \
-M5_BATCH_BOOTSTRAP=$WORKSPACE/experiments/distributed/ego_networks/docker/boostrap.sh \
+FEDML_BATCH_BOOTSTRAP=$WORKSPACE/experiments/distributed/ego_networks/docker/boostrap.sh \
 --env \
-M5_BATCH_ENTRY_SCRIPT=$WORKSPACE/experiments/distributed/ego_networks/docker/entry_script.sh \
+FEDML_BATCH_ENTRY_SCRIPT=$WORKSPACE/experiments/distributed/ego_networks/docker/entry_script.sh \
 -u fedgraphnn --net=host \
 fedml/fedgraphnn:7.0
