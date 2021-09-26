@@ -24,5 +24,5 @@ nvidia-docker run -i -v /fsx:/fsx --shm-size=60g --ulimit nofile=65535 --ulimit 
 FEDML_BATCH_BOOTSTRAP=$WORKSPACE/experiments/distributed/ego_networks/docker/boostrap.sh \
 --env \
 FEDML_BATCH_ENTRY_SCRIPT=$WORKSPACE/experiments/distributed/ego_networks/docker/entry_script.sh \
--u fedgraphnn --net=host \
+-u fedml --net=host \
 fedml/fedgraphnn:7.0
