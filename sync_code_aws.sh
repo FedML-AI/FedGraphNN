@@ -1,6 +1,6 @@
 #!/bin/bash
 # 8 GPUs/node
-M5_DEV=ec2-3-86-4-172.compute-1.amazonaws.com
+M5_DEV=xxx
 
 LOCAL_PATH=/Users/hchaoyan/source/FedGraphNN/
 
