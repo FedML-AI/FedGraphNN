@@ -27,18 +27,31 @@ bash install.sh
 
 ## Experiments 
 
-1. Graph - level
+1. Graph Level
       1. MoleculeNet [Centralized Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/centralized) [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/moleculenet) 
       2.  Social Networks [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/social_networks)
 2. Sub-graph Level
       1. Recommendation Systems [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/recommender_system)
-3. Node-level
+3. Node Level
       1. Ego Networks (Citation & Coauthor Networks) [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/ego_networks)
 
 ## How to Add Your Own Model?
+Our framework supports [PyTorch](https://github.com/FedML-AI/FedGraphNN/tree/main/model/moleculenet) and [PyTorch Geometric](https://github.com/FedML-AI/FedGraphNN/blob/main/model/recommender_system/sage_link.py) based models. To do so, 
+
+1. Create a Pytorch/PyG based model and place it under model folder
+2. Prepare a trainer module ([example](https://github.com/FedML-AI/FedGraphNN/blob/main/training/subgraph_level/fed_subgraph_lp_trainer.py)) by inheriting the base class in `FedML/fedml-core/trainer/fedavg_trainer.py`.
+3. Prepare an experiment file similar to files in `experiments/` folder.
+
+## How to Add More Datasets ? 
+
 
 
 ## How to Add Domain-Specific Splits & Non-I.I.D.ness Generation Mechanism?
+
+Splits and Non-I.I.D.'ness methods are located under `data_preprocessing` library. By default, we provide I.I.D. and non-I.I.D. sampling(`create_non_uniform_split.py` , Dirichlet distribution sampling) based on sample size of the dataset.
+
+To create custom splitting method based on the sample size, you can create a new function or modify `create_non_uniform_split.py` function.
+
 
 ## Code Structure of FedGraphNN
 <!-- Note: The code of FedGraphNN only uses `FedML/fedml_core` and `FedML/fedml_api`.
@@ -50,9 +63,9 @@ At that time, we can install FedML package with pip or conda, without the need t
 - `data`: Provide data downloading scripts and store the downloaded datasets.
 Note that in `FedML/data`, there also exists datasets for research, but these datasets are used for evaluating federated optimizers (e.g., FedAvg) and platforms. FedGraphNN supports more advanced datasets and models for federated training of graph neural networks. Currently, we have molecular machine learning datasets. 
 
-- `data_preprocessing`: Domain-specific PyTorch Data loaders for centralized and distributed training. 
+- `data_preprocessing`: Domain-specific PyTorch/PyG Data Loaders for centralized and distributed training. 
 
-- `model`: GNN models.
+- `model`: GNN models written in Pytorch/PyG.
 
 - `trainer`: please define your own `trainer.py` by inheriting the base class in `FedML/fedml-core/trainer/fedavg_trainer.py`.
 Some tasks can share the same trainer.
