@@ -2,7 +2,6 @@
 A Research-oriented Federated Learning Library and Benchmark Platform for Graph Neural Networks. 
 Accepted to ICLR-DPML and MLSys21 - GNNSys'21 workshops. 
 
-Datasets: http://moleculenet.ai/
 
 ## Installation
 <!-- http://doc.fedml.ai/#/installation -->
@@ -17,26 +16,29 @@ bash install.sh
 ## Data Preparation
 
 1. Graph - level 
-      a. MoleculeNet [] []
-      b. Social Networks [] []
+      1. MoleculeNet [] []
+      2. Social Networks [] []
 2. Sub-graph Level
-      a. Knowledge Graphs [] []
-      b. Recommendation Systems [] []
+      1. Knowledge Graphs [] []
+      2. Recommendation Systems [] []
 3. Node-level
-      a. Coauthor Networks [] []
-      b. Citation Networks [] []
+      1. Coauthor Networks [] []
+      2. Citation Networks [] []
 
 ## Experiments 
 
-1. Graph - level 
-      a. MoleculeNet [centralized] [federated]
-      b. Social Networks [] [federated]
+1. Graph - level
+      1. MoleculeNet [Centralized Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/centralized) [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/moleculenet) 
+      2.  Social Networks [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/social_networks)
 2. Sub-graph Level
-      a. Knowledge Graphs [] [federated]
-      b. Recommendation Systems [] [federated]
+      1. Recommendation Systems [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/recommender_system)
 3. Node-level
-      a. Coauthor Networks [] [federated]
-      b. Citation Networks [] [federated]
+      1. Ego Networks (Citation & Coauthor Networks) [Federated Experiments](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/ego_networks)
+
+## How to Add Your Own Model?
+
+
+## How to Add Domain-Specific Splits & Non-I.I.D.ness Generation Mechanism?
 
 ## Code Structure of FedGraphNN
 <!-- Note: The code of FedGraphNN only uses `FedML/fedml_core` and `FedML/fedml_api`.
@@ -77,14 +79,23 @@ git push
 ```
 
 ## Citation
-Please cite our FedML paper if it helps your research.
+Please cite our FedML and FedGraphNN papers if it helps your research.
 You can describe us in your paper like this: "We develop our experiments based on FedML".
 ```
 @misc{he2021fedgraphnn,
       title={FedGraphNN: A Federated Learning System and Benchmark for Graph Neural Networks}, 
-      author={Chaoyang He and Keshav Balasubramanian and Emir Ceyani and Yu Rong and Peilin Zhao and Junzhou Huang and Murali Annavaram and Salman Avestimehr},
+      author={Chaoyang He and Keshav Balasubramanian and Emir Ceyani and Carl Yang and Han Xie and Lichao Sun and Lifang He and Liangwei Yang and Philip S. Yu and Yu Rong and Peilin Zhao and Junzhou Huang and Murali Annavaram and Salman Avestimehr},
       year={2021},
       eprint={2104.07145},
+      archivePrefix={arXiv},
+      primaryClass={cs.LG}
+}
+
+@misc{he2020fedml,
+      title={FedML: A Research Library and Benchmark for Federated Machine Learning}, 
+      author={Chaoyang He and Songze Li and Jinhyun So and Xiao Zeng and Mi Zhang and Hongyi Wang and Xiaoyang Wang and Praneeth Vepakomma and Abhishek Singh and Hang Qiu and Xinghua Zhu and Jianzong Wang and Li Shen and Peilin Zhao and Yan Kang and Yang Liu and Ramesh Raskar and Qiang Yang and Murali Annavaram and Salman Avestimehr},
+      year={2020},
+      eprint={2007.13518},
       archivePrefix={arXiv},
       primaryClass={cs.LG}
 }
