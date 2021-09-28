@@ -15,15 +15,17 @@ bash install.sh
 
 ## Data Preparation
 
+# FedGraphNN datasets
+
 1. Graph - level 
-      1. MoleculeNet [] []
-      2. Social Networks [] []
+      1. MoleculeNet -> We provide preprocessed versions of MoleculeNet datasets. To use datasets,first run  ```bash download_and_unzip.sh```  located under each dataset folder in  ```data/moleculenet```
+      2. Social Networks -> We use PyTorch Geometric datasets for our social network datasets. For details, please see [this link](https://github.com/FedML-AI/FedGraphNN/blob/main/data_preprocessing/social_networks/data_loader.py)
 2. Sub-graph Level
-      1. Knowledge Graphs [] []
-      2. Recommendation Systems [] []
+      1. Knowledge Graphs -> Please first run bash file inside ```data/subgraph-level```
+      2. Recommendation Systems -> We provide preprocessed versions of Ciao and Epinions
 3. Node-level
-      1. Coauthor Networks [] []
-      2. Citation Networks [] []
+      1. Coaauthor & Citation Networks (Ego Networks) -> [Details](https://github.com/FedML-AI/FedGraphNN/tree/main/experiments/distributed/ego_networks)
+
 
 ## Experiments 
 
@@ -43,8 +45,12 @@ Our framework supports [PyTorch](https://github.com/FedML-AI/FedGraphNN/tree/mai
 3. Prepare an experiment file similar to files in `experiments/` folder.
 
 ## How to Add More Datasets ? 
+If it is a PyTorch Geometric dataset, please see [this link](https://github.com/FedML-AI/FedGraphNN/blob/main/data_preprocessing/social_networks/data_loader.py)
 
-
+Otherwise, do the following:
+1. Create new folder under `data_preprocessing` folder 
+2. Create a DataLoader object
+3. 
 
 ## How to Add Domain-Specific Splits & Non-I.I.D.ness Generation Mechanism?
 
