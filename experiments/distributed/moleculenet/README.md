@@ -1,7 +1,7 @@
 ## Data Preparation
 
 ## Experiments 
-
+To use datasets,first run  ```bash download_and_unzip.sh```  located under each dataset folder in  ```data/moleculenet```
 
 ### Distributed/Federated Molecule Property Classification experiments
 ```
