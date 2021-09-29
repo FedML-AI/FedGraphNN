@@ -48,9 +48,9 @@ Our framework supports [PyTorch](https://github.com/FedML-AI/FedGraphNN/tree/mai
 If it is a PyTorch Geometric dataset, please see [this link](https://github.com/FedML-AI/FedGraphNN/blob/main/data_preprocessing/social_networks/data_loader.py)
 
 Otherwise, do the following:
-1. Create new folder under `data_preprocessing` folder 
-2. Create a DataLoader object
-3. 
+1. Create new folder under `data_preprocessing` folder and re-define `data_preprocessing/data_loader.py` based on your new dataset.
+2. Rewrite `data_loader.py` file under `data_preprocessing` folder
+
 
 ## How to Add Domain-Specific Splits & Non-I.I.D.ness Generation Mechanism?
 
