@@ -2,6 +2,7 @@ import argparse
 import os
 import socket
 import sys
+import traceback
 
 import psutil
 import setproctitle
@@ -435,18 +436,22 @@ if __name__ == "__main__":
     model, trainer = create_model(args, args.model, feat_dim, num_cats, output_dim=None)
 
     # start "federated averaging (FedAvg)"
-    FedML_FedAvg_distributed(
-        process_id,
-        worker_number,
-        device,
-        comm,
-        model,
-        train_data_num,
-        train_data_global,
-        test_data_global,
-        data_local_num_dict,
-        train_data_local_dict,
-        test_data_local_dict,
-        args,
-        trainer,
-    )
+    try:
+        FedML_FedAvg_distributed(
+            process_id,
+            worker_number,
+            device,
+            comm,
+            model,
+            train_data_num,
+            train_data_global,
+            test_data_global,
+            data_local_num_dict,
+            train_data_local_dict,
+            test_data_local_dict,
+            args,
+            trainer,
+        )
+    except Exception as e:
+        print(e)
+        logging.info('traceback.format_exc():\n%s' % traceback.format_exc())
