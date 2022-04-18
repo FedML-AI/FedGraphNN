@@ -2,6 +2,7 @@ import argparse
 import os
 import socket
 import sys
+import traceback
 
 import psutil
 import setproctitle
@@ -295,10 +296,15 @@ if __name__ == "__main__":
 
     # start "federated averaging (FedAvg)"
     fl_alg = get_fl_algorithm_initializer(args.fl_algorithm)
-    fl_alg(process_id, worker_number, device, comm,
-                             model, train_data_num, train_data_global, test_data_global,
-                             data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
-                             trainer)
+
+    try:
+        fl_alg(process_id, worker_number, device, comm,
+                                 model, train_data_num, train_data_global, test_data_global,
+                                 data_local_num_dict, train_data_local_dict, test_data_local_dict, args,
+                                 trainer)
+    except Exception as e:
+        print(e)
+        logging.info('traceback.format_exc():\n%s' % traceback.format_exc())
 
     if process_id == 0:
         post_complete_message_to_sweep_process(args)
