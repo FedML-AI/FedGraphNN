@@ -1,3 +1,6 @@
+###  An upgraded version is maintained at FedML repo: https://github.com/FedML-AI/FedML/tree/master/python/app/fedgraphnn
+
+
 # FedGraphNN: A Federated Learning System and Benchmark for Graph Neural Networks
 A Research-oriented Federated Learning Library and Benchmark Platform for Graph Neural Networks. 
 Accepted to ICLR-DPML and MLSys21 - GNNSys'21 workshops. 
