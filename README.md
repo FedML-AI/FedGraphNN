@@ -1,4 +1,4 @@
-###  An upgraded version is maintained at FedML repo: https://github.com/FedML-AI/FedML/tree/master/python/app/fedgraphnn
+###  Note: An upgraded version is maintained at FedML repo: https://github.com/FedML-AI/FedML/tree/master/python/app/fedgraphnn
 
 
 # FedGraphNN: A Federated Learning System and Benchmark for Graph Neural Networks
